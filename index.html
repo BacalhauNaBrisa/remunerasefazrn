@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Simulador de Remuneração — AFRE Sefaz/RN</title>
+<meta name="description" content="Simulador não-oficial da remuneração mensal do Auditor Fiscal de Receitas Estaduais da Sefaz/RN"/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+	--navy-950:#0c1f36;
+	--navy-900:#132c4a;
+	--navy-800:#1b3a63;
+	--navy-700:#274b7d;
+	--green-600:#2e7d4f;
+	--green-700:#256640;
+	--gold-500:#f0b93b;
+	--gold-600:#d99e20;
+	--cream-50:#faf8f3;
+	--cream-100:#f2eee2;
+	--ink-900:#16202c;
+	--ink-600:#4b5768;
+	--ink-400:#79879a;
+	--line:#dcd6c6;
+	--ok-bg:#e9f3ec;
+	--danger:#b3432b;
+	--radius:10px;
+	--shadow: 0 1px 2px rgba(15,30,50,.06), 0 8px 24px -12px rgba(15,30,50,.18);
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+	margin:0;
+	background:var(--cream-50);
+	color:var(--ink-900);
+	font-family:'Inter',system-ui,sans-serif;
+	font-size:15px;
+	line-height:1.5;
+}
+.num{font-family:'JetBrains Mono',ui-monospace,monospace; font-variant-numeric:tabular-nums;}
+h1,h2,h3{font-family:'Space Grotesk',system-ui,sans-serif; color:var(--navy-950); margin:0 0 .4em;}
+a{color:var(--navy-700);}
+
+/* ---------- header ---------- */
+.topbar{
+	background: linear-gradient(180deg,var(--navy-950),var(--navy-900) 75%);
+	color:#f4f1e6;
+	border-bottom:4px solid var(--gold-500);
+}
+.topbar-inner{
+	max-width:1180px;
+	margin:0 auto;
+	padding:26px 24px 22px;
+	display:flex;
+	align-items:center;
+	gap:22px;
+}
+.topbar img{
+	height:96px;
+	width:auto;
+	filter:drop-shadow(0 6px 14px rgba(0,0,0,.35));
+	flex-shrink:0;
+}
+.topbar .eyebrow{
+	text-transform:uppercase;
+	letter-spacing:.14em;
+	font-size:11.5px;
+	font-weight:600;
+	color:var(--gold-500);
+	margin-bottom:6px;
+}
+.topbar h1{
+	color:#fbf9f2;
+	font-size:26px;
+	margin:0 0 4px;
+	line-height:1.2;
+}
+.topbar p{
+	margin:0;
+	color:#c7cfdb;
+	font-size:13.5px;
+	max-width:60ch;
+}
+
+/* ---------- layout ---------- */
+.wrap{
+	max-width:1180px;
+	margin:0 auto;
+	padding:28px 24px 80px;
+	display:grid;
+	grid-template-columns:1fr 380px;
+	gap:24px;
+	align-items:start;
+}
+@media (max-width:900px){
+	.wrap{grid-template-columns:1fr;}
+	.result-panel{position:static !important;}
+}
+
+.card{
+	background:#fff;
+	border:1px solid var(--line);
+	border-radius:var(--radius);
+	box-shadow:var(--shadow);
+	padding:22px 24px;
+	margin-bottom:20px;
+}
+.card > h2{
+	font-size:16.5px;
+	display:flex;
+	align-items:baseline;
+	gap:8px;
+	border-bottom:1px solid var(--cream-100);
+	padding-bottom:12px;
+	margin-bottom:18px;
+}
+.card > h2 .tag{
+	font-family:'JetBrains Mono',monospace;
+	font-size:11px;
+	font-weight:600;
+	color:var(--green-700);
+	background:var(--ok-bg);
+	border-radius:5px;
+	padding:2px 7px;
+	letter-spacing:.03em;
+}
+
+.field{margin-bottom:16px;}
+.field:last-child{margin-bottom:0;}
+.field label{
+	display:block;
+	font-size:12.5px;
+	font-weight:600;
+	color:var(--ink-600);
+	margin-bottom:6px;
+	letter-spacing:.01em;
+}
+.field .hint{
+	font-size:11.5px;
+	color:var(--ink-400);
+	margin-top:5px;
+	line-height:1.45;
+}
+select, input[type="text"], input[type="number"]{
+	width:100%;
+	font:inherit;
+	font-size:14.5px;
+	padding:10px 12px;
+	border:1.5px solid var(--line);
+	border-radius:7px;
+	background:#fff;
+	color:var(--ink-900);
+	transition:border-color .15s;
+}
+select:focus, input:focus{
+	outline:none;
+	border-color:var(--navy-700);
+	box-shadow:0 0 0 3px rgba(39,75,125,.15);
+}
+.check-row{
+	display:flex;
+	gap:10px;
+	align-items:flex-start;
+	background:var(--cream-100);
+	border:1px solid var(--line);
+	border-radius:7px;
+	padding:12px 13px;
+	margin-top:6px;
+}
+.check-row input{width:17px; height:17px; margin-top:1px; accent-color:var(--green-600);}
+.check-row span{font-size:13px; color:var(--ink-700, var(--ink-900)); line-height:1.4;}
+.hidden{display:none !important;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+@media (max-width:520px){.grid2{grid-template-columns:1fr;}}
+
+/* reference tables */
+table.ref{
+	width:100%;
+	border-collapse:collapse;
+	font-size:13px;
+	margin:10px 0 4px;
+}
+table.ref th, table.ref td{
+	padding:8px 10px;
+	border-bottom:1px solid var(--cream-100);
+	text-align:left;
+}
+table.ref th{
+	font-size:11px;
+	text-transform:uppercase;
+	letter-spacing:.06em;
+	color:var(--ink-400);
+	font-weight:600;
+}
+table.ref td.num, table.ref th.num{text-align:right;}
+table.ref tr:last-child td{border-bottom:none;}
+.citation{
+	font-size:12px;
+	color:var(--ink-600);
+	background:var(--cream-100);
+	border-left:3px solid var(--gold-500);
+	padding:9px 12px;
+	border-radius:4px;
+	margin-top:10px;
+	line-height:1.5;
+}
+
+/* ---------- result panel ---------- */
+.result-panel{position:sticky; top:20px;}
+.result-hero{
+	background:linear-gradient(160deg,var(--navy-900),var(--navy-950));
+	color:#f4f1e6;
+	border-radius:var(--radius);
+	padding:22px 22px 20px;
+	box-shadow:var(--shadow);
+	margin-bottom:16px;
+	position:relative;
+	overflow:hidden;
+}
+.result-hero::before{
+	content:"";
+	position:absolute; right:-30px; top:-30px;
+	width:150px; height:150px;
+	background:radial-gradient(circle,rgba(240,185,59,.22),transparent 70%);
+}
+.result-hero .eyebrow{
+	text-transform:uppercase; letter-spacing:.12em; font-size:11px;
+	color:var(--gold-500); font-weight:600; margin-bottom:8px;
+}
+.result-hero .liquido{
+	font-family:'JetBrains Mono',monospace;
+	font-size:32px;
+	font-weight:700;
+	line-height:1.1;
+	letter-spacing:-.01em;
+}
+.result-hero .liquido small{font-size:16px; font-weight:600; opacity:.75;}
+.result-hero .bruto-line{
+	margin-top:10px;
+	font-size:12.5px;
+	color:#c7cfdb;
+	display:flex;
+	justify-content:space-between;
+}
+.result-hero .bruto-line .num{color:#f4f1e6; font-weight:600;}
+
+.breakdown{
+	background:#fff;
+	border:1px solid var(--line);
+	border-radius:var(--radius);
+	box-shadow:var(--shadow);
+	padding:18px 20px;
+}
+.breakdown h3{font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-400); margin-bottom:12px;}
+.bline{
+	display:flex;
+	justify-content:space-between;
+	gap:10px;
+	padding:7px 0;
+	border-bottom:1px dashed var(--cream-100);
+	font-size:13.5px;
+}
+.bline:last-of-type{border-bottom:none;}
+.bline.add .num{color:var(--green-700);}
+.bline.sub .num{color:var(--danger);}
+.bline .num{font-weight:600;}
+.bline.total{
+	margin-top:8px;
+	padding-top:12px;
+	border-top:2px solid var(--navy-950);
+	border-bottom:none;
+	font-size:15px;
+	font-weight:700;
+}
+.bline.total .num{color:var(--navy-950); font-size:16px;}
+.bline .lbl{color:var(--ink-600);}
+.bline.total .lbl{color:var(--navy-950);}
+
+.mascote-note{
+	display:flex;
+	gap:12px;
+	align-items:center;
+	margin-top:16px;
+	padding:12px 14px;
+	background:var(--ok-bg);
+	border-radius:8px;
+	border:1px solid #cfe3d6;
+}
+.mascote-note img{width:44px; height:auto; flex-shrink:0;}
+.mascote-note p{margin:0; font-size:12px; color:var(--green-700); line-height:1.4;}
+
+footer{
+	max-width:1180px;
+	margin:0 auto;
+	padding:0 24px 40px;
+	color:var(--ink-400);
+	font-size:12px;
+	line-height:1.6;
+}
+footer a{color:var(--ink-600);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+	<div class="topbar-inner">
+		<img src="afrelefante.png" alt="Mascote AFRE Sefaz/RN"/>
+		<div>
+			<div class="eyebrow">Simulador não-oficial</div>
+			<h1>Remuneração do AFRE — Sefaz/RN</h1>
+			<p>Simule a remuneração bruta e líquida do Auditor Fiscal de Receitas Estaduais da Secretaria da Fazenda do Rio Grande do Norte, padrão a padrão, conforme a LOAT-RN e os atos normativos vigentes.</p>
+		</div>
+	</div>
+</div>
+
+<div class="wrap">
+
+	<!-- ===================== COLUNA ESQUERDA: FORM + TABELAS ===================== -->
+	<div>
+
+		<div class="card">
+			<h2>Padrão remuneratório <span class="tag">obrigatório</span></h2>
+			<div class="field">
+				<label for="padrao">Selecione o padrão (AFRE-1 a AFRE-5)</label>
+				<select id="padrao">
+					<option value="AFRE-1">AFRE-1</option>
+					<option value="AFRE-2">AFRE-2</option>
+					<option value="AFRE-3">AFRE-3</option>
+					<option value="AFRE-4">AFRE-4</option>
+					<option value="AFRE-5">AFRE-5</option>
+				</select>
+			</div>
+
+			<div class="field hidden" id="campoFormacao">
+				<div class="check-row">
+					<input type="checkbox" id="emFormacao"/>
+					<span>Em curso de formação conforme Art. 46 da Lei Complementar nº 799 de 08/12/2025 (LOAT-RN)?</span>
+				</div>
+				<div class="hint">Marcando esta opção, as Unidades de Parcela Variável (UPVs) não entram no cálculo da remuneração.</div>
+			</div>
+
+			<table class="ref">
+				<thead><tr><th>Padrão</th><th class="num">Vencimento básico</th><th class="num">Qtd. de UPVs</th></tr></thead>
+				<tbody>
+					<tr><td>AFRE-1</td><td class="num">R$ 23.045,69</td><td class="num">34,23</td></tr>
+					<tr><td>AFRE-2</td><td class="num">R$ 24.432,12</td><td class="num">36,29</td></tr>
+					<tr><td>AFRE-3</td><td class="num">R$ 26.033,72</td><td class="num">38,67</td></tr>
+					<tr><td>AFRE-4</td><td class="num">R$ 30.775,60</td><td class="num">45,71</td></tr>
+					<tr><td>AFRE-5</td><td class="num">R$ 33.665,36</td><td class="num">50,00</td></tr>
+				</tbody>
+			</table>
+			<div class="citation">O valor unitário de uma UPV é de R$ 294,64, conforme Resolução Interadministrativa nº 50/2026 — SEAD/SEFAZ, de 04 de março de 2026 (publicada no DOE-RN de 28 de março de 2026). A quantidade de UPVs foi estabelecida pelo Decreto nº 35.305, de 12 de fevereiro de 2026 (publicado no DOE-RN de 13 de fevereiro de 2026).</div>
+		</div>
+
+		<div class="card">
+			<h2>Verbas adicionais</h2>
+			<div class="field">
+				<label for="diasAjuda">Ajuda de Custo Operacional de Fiscalização — dias no mês</label>
+				<select id="diasAjuda">
+					<option value="0">0 dia</option>
+					<option value="1">1 dia</option>
+					<option value="2">2 dias</option>
+					<option value="3">3 dias</option>
+					<option value="4">4 dias</option>
+					<option value="5">5 dias</option>
+					<option value="6">6 dias</option>
+					<option value="7">7 dias</option>
+				</select>
+				<div class="hint">Valor indenizatório fixo de 2,30% sobre o vencimento básico + UPVs do AFRE-5, por dia. Não sofre desconto e não integra a base previdenciária.</div>
+			</div>
+
+			<div class="field">
+				<label for="ats">Adicional por Tempo de Serviço (ATS)</label>
+				<select id="ats">
+					<option value="0">0 a 4 anos: 0%</option>
+					<option value="0.05">5 a 9 anos: 5%</option>
+					<option value="0.10">10 a 14 anos: 10%</option>
+					<option value="0.15">15 a 19 anos: 15%</option>
+					<option value="0.20">20 a 24 anos: 20%</option>
+					<option value="0.25">25 a 29 anos: 25%</option>
+					<option value="0.30">30 a 34 anos: 30%</option>
+					<option value="0.35">35 anos ou mais: 35%</option>
+				</select>
+			</div>
+
+			<div class="hint">O adicional de periculosidade (30% do vencimento básico) é devido em todos os padrões, independentemente das UPVs, conforme § 5º do Art. 56 da Lei Complementar nº 799/2025 (LOAT-RN), e não compõe a base previdenciária.</div>
+		</div>
+
+		<div class="card">
+			<h2>Teto remuneratório e previdência <span class="tag">obrigatório</span></h2>
+
+			<div class="field">
+				<label for="teto">Teto remuneratório</label>
+				<select id="teto">
+					<option value="41845.49">Teto atual (Desembargador do TJ-RN): R$ 41.845,49</option>
+					<option value="46366.19">Teto janeiro/2027 (Ministro do STF): R$ 46.366,19</option>
+				</select>
+			</div>
+
+			<div class="field">
+				<label for="regime">Regime previdenciário</label>
+				<select id="regime">
+					<option value="RPPS">RPPS</option>
+					<option value="COMPLEMENTAR">Previdência Complementar</option>
+				</select>
+			</div>
+
+			<div class="field hidden" id="campoAliquotaComplementar">
+				<label for="aliquotaComplementar">Alíquota da Previdência Complementar</label>
+				<select id="aliquotaComplementar">
+					<option value="0">0%</option>
+					<option value="0.075">7,5%</option>
+					<option value="0.08">8,0%</option>
+					<option value="0.085" selected>8,5%</option>
+				</select>
+			</div>
+
+			<table class="ref">
+				<thead><tr><th>Faixa de base previdenciária</th><th class="num">Alíquota</th></tr></thead>
+				<tbody>
+					<tr><td>de R$ 0,00 a R$ 4.862,18</td><td class="num">11%</td></tr>
+					<tr><td>de R$ 4.862,18 a R$ 8.475,55</td><td class="num">14%</td></tr>
+					<tr><td>de R$ 8.475,56 a R$ 20.837,90</td><td class="num">15%</td></tr>
+					<tr><td>de R$ 20.837,90 a R$ 41.675,80</td><td class="num">16%</td></tr>
+					<tr><td>acima de R$ 41.675,81</td><td class="num">18%</td></tr>
+				</tbody>
+			</table>
+			<div class="citation">Conforme Portaria nº 001/2026/CRH/PR, de 12 de janeiro de 2026 (publicada no DOE-RN de 13 de janeiro de 2026).</div>
+		</div>
+
+		<div class="card">
+			<h2>Imposto de renda</h2>
+			<div class="grid2">
+				<div class="field">
+					<label for="dependentes">Quantidade de dependentes</label>
+					<input type="number" id="dependentes" min="0" max="99" step="1" value="0"/>
+					<div class="hint">Dedução de R$ 189,59 por dependente.</div>
+				</div>
+				<div class="field">
+					<label for="outrasDeducoes">Outras deduções (pensão alimentícia, etc.)</label>
+					<input type="number" id="outrasDeducoes" min="0" step="0.01" value="0"/>
+				</div>
+			</div>
+		</div>
+
+		<button id="btnCalcular" style="display:none">Calcular</button>
+	</div>
+
+	<!-- ===================== COLUNA DIREITA: RESULTADO ===================== -->
+	<div class="result-panel">
+		<div class="result-hero">
+			<div class="eyebrow">Remuneração líquida estimada</div>
+			<div class="liquido"><small>R$</small> <span id="outLiquida" class="num">0,00</span></div>
+			<div class="bruto-line"><span>Remuneração bruta</span><span class="num" id="outBrutaMini">R$ 0,00</span></div>
+		</div>
+
+		<div class="breakdown">
+			<h3>Composição — proventos</h3>
+			<div class="bline add"><span class="lbl">Vencimento básico</span><span class="num" id="lVenc">R$ 0,00</span></div>
+			<div class="bline add"><span class="lbl">UPVs</span><span class="num" id="lUpv">R$ 0,00</span></div>
+			<div class="bline add"><span class="lbl">Adicional de periculosidade</span><span class="num" id="lPeric">R$ 0,00</span></div>
+			<div class="bline add"><span class="lbl">Ajuda de Custo Operacional</span><span class="num" id="lAjuda">R$ 0,00</span></div>
+			<div class="bline add"><span class="lbl">ATS</span><span class="num" id="lAts">R$ 0,00</span></div>
+			<div class="bline total"><span class="lbl">Remuneração bruta</span><span class="num" id="lBruta">R$ 0,00</span></div>
+
+			<h3 style="margin-top:18px;">Deduções</h3>
+			<div class="bline sub"><span class="lbl">Redutor Art. 37/CF</span><span class="num" id="lRedutor">R$ 0,00</span></div>
+			<div class="bline sub"><span class="lbl">Desconto previdenciário oficial</span><span class="num" id="lPrevOficial">R$ 0,00</span></div>
+			<div class="bline sub" id="linhaPrevComplementar"><span class="lbl">Desconto previdenciário complementar</span><span class="num" id="lPrevComplementar">R$ 0,00</span></div>
+			<div class="bline sub"><span class="lbl">Imposto de renda</span><span class="num" id="lIr">R$ 0,00</span></div>
+			<div class="bline total"><span class="lbl">Remuneração líquida</span><span class="num" id="lLiquida">R$ 0,00</span></div>
+		</div>
+
+		<div class="mascote-note">
+			<img src="afrelefante.png" alt="Mascote AFRE"/>
+			<p>Simulação atualizada automaticamente a cada alteração nos campos ao lado. Valores meramente ilustrativos.</p>
+		</div>
+	</div>
+
+</div>
+
+<footer>
+	Simulador independente e não-oficial, sem qualquer vínculo com a Sefaz/RN. Os valores e regras aqui reproduzidos têm caráter meramente estimativo; consulte sempre a legislação vigente e o órgão competente para fins oficiais.
+	Código-fonte: <a target="_blank" rel="noopener noreferrer" href="https://github.com/BacalhauNaBrisa/remunerasefazrn">github.com/BacalhauNaBrisa/remunerasefazrn</a>
+</footer>
+
+<script>
+// ======================= CONSTANTES =======================
+const PADROES = {
+	'AFRE-1': { venc: 23045.69, upv: 34.23 },
+	'AFRE-2': { venc: 24432.12, upv: 36.29 },
+	'AFRE-3': { venc: 26033.72, upv: 38.67 },
+	'AFRE-4': { venc: 30775.60, upv: 45.71 },
+	'AFRE-5': { venc: 33665.36, upv: 50.00 }
+};
+const VALOR_UPV = 294.64;
+const PERICULOSIDADE_PCT = 0.30;
+const DEDUCAO_POR_DEPENDENTE = 189.59;
+
+const FAIXAS_PREV = [
+	{ ini: 0,        fim: 4862.18,  pct: 0.11 },
+	{ ini: 4862.18,  fim: 8475.55,  pct: 0.14 },
+	{ ini: 8475.55,  fim: 20837.90, pct: 0.15 },
+	{ ini: 20837.90, fim: 41675.80, pct: 0.16 },
+	{ ini: 41675.80, fim: Infinity, pct: 0.18 }
+];
+
+const IR_LIMITES = [2428.80, 2826.65, 3751.05, 4664.68]; // limites acumulados
+const IR_PCTS    = [0, 0.075, 0.15, 0.225, 0.275];
+
+// ======================= UTILITÁRIOS =======================
+function truncar(valor, casas) {
+	casas = (casas === undefined) ? 2 : casas;
+	if (valor <= 0) {
+		var fatorN = Math.pow(10, casas);
+		return Math.ceil(valor * fatorN - 1e-6) / fatorN; // trunca em direção ao zero p/ negativos
+	}
+	var fator = Math.pow(10, casas);
+	return Math.floor(valor * fator + 1e-6) / fator;
+}
+
+function formatarBRL(valor) {
+	if (valor === undefined || valor === null || isNaN(valor)) valor = 0;
+	return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// valor fixo por dia da Ajuda de Custo Operacional de Fiscalização
+// (2,30% sobre vencimento básico + UPVs do AFRE-5)
+const AFRE5_UPV_TOTAL = truncar(PADROES['AFRE-5'].upv * VALOR_UPV, 2);
+const AJUDA_CUSTO_POR_DIA = truncar(0.023 * (PADROES['AFRE-5'].venc + AFRE5_UPV_TOTAL), 2);
+
+// ======================= CÁLCULO DE FAIXAS =======================
+function calcularDescontoPrevidenciario(base, faixas) {
+	var total = 0;
+	for (var i = 0; i < faixas.length; i++) {
+		var f = faixas[i];
+		if (base > f.ini) {
+			var valorFaixa = Math.min(base, f.fim) - f.ini;
+			if (valorFaixa > 0) total += truncar(valorFaixa * f.pct, 2);
+		}
+	}
+	return truncar(total, 2);
+}
+
+function calcularIR(baseIR) {
+	if (baseIR <= 0) return 0;
+	var imposto = 0;
+	var anterior = 0;
+	var limitesCompletos = IR_LIMITES.concat([Infinity]);
+	for (var i = 0; i < limitesCompletos.length; i++) {
+		var limiteAtual = limitesCompletos[i];
+		if (baseIR > limiteAtual) {
+			imposto += (limiteAtual - anterior) * IR_PCTS[i];
+			anterior = limiteAtual;
+		} else {
+			imposto += (baseIR - anterior) * IR_PCTS[i];
+			anterior = baseIR;
+			break;
+		}
+	}
+	return truncar(imposto, 2);
+}
+
+// ======================= UI: mostrar/esconder campos condicionais =======================
+function atualizarVisibilidade() {
+	var padrao = $('#padrao').val();
+	$('#campoFormacao').toggleClass('hidden', padrao !== 'AFRE-1');
+	if (padrao !== 'AFRE-1') $('#emFormacao').prop('checked', false);
+
+	var regime = $('#regime').val();
+	$('#campoAliquotaComplementar').toggleClass('hidden', regime !== 'COMPLEMENTAR');
+	$('#linhaPrevComplementar').toggleClass('hidden', regime !== 'COMPLEMENTAR');
+}
+
+// ======================= CÁLCULO PRINCIPAL =======================
+function calcular() {
+	atualizarVisibilidade();
+
+	var padrao = PADROES[$('#padrao').val()];
+	var emFormacao = ($('#padrao').val() === 'AFRE-1') && $('#emFormacao').is(':checked');
+
+	var vencBasico = padrao.venc;
+	var upvTotal = emFormacao ? 0 : truncar(padrao.upv * VALOR_UPV, 2);
+
+	var periculosidade = truncar(vencBasico * PERICULOSIDADE_PCT, 2);
+
+	var dias = parseInt($('#diasAjuda').val(), 10) || 0;
+	var ajudaCusto = truncar(AJUDA_CUSTO_POR_DIA * dias, 2);
+
+	var atsPct = parseFloat($('#ats').val());
+	var ats = truncar(vencBasico * atsPct, 2);
+
+	var bruta = truncar(vencBasico + upvTotal + periculosidade + ajudaCusto + ats, 2);
+
+	var teto = parseFloat($('#teto').val());
+
+	// Redutor Art. 37/CF
+	var somaSemAjuda = truncar(vencBasico + upvTotal + periculosidade + ats, 2);
+	var redutor = somaSemAjuda > teto ? truncar(somaSemAjuda - teto, 2) : 0;
+
+	// Base previdenciária
+	var basePrev = truncar(vencBasico + upvTotal + ats, 2);
+	if (basePrev > teto) basePrev = teto;
+
+	var regime = $('#regime').val();
+	var prevOficial, prevComplementar = 0;
+
+	if (regime === 'RPPS') {
+		prevOficial = calcularDescontoPrevidenciario(basePrev, FAIXAS_PREV);
+	} else {
+		var faixasLimitadas = [FAIXAS_PREV[0], FAIXAS_PREV[1]];
+		prevOficial = calcularDescontoPrevidenciario(basePrev, faixasLimitadas);
+
+		var aliquotaComp = parseFloat($('#aliquotaComplementar').val());
+		var difComp = basePrev - FAIXAS_PREV[1].fim; // acima de R$ 8.475,55
+		if (difComp > 0) {
+			prevComplementar = truncar(difComp * aliquotaComp, 2);
+		}
+	}
+
+	// Base do Imposto de Renda
+	var baseIR = truncar(vencBasico + upvTotal + periculosidade + ats, 2);
+	if (baseIR > teto) baseIR = teto;
+
+	var dependentes = parseInt($('#dependentes').val(), 10) || 0;
+	if (dependentes < 0) dependentes = 0;
+	if (dependentes > 99) dependentes = 99;
+
+	var outrasDeducoes = parseFloat($('#outrasDeducoes').val());
+	if (isNaN(outrasDeducoes) || outrasDeducoes < 0) outrasDeducoes = 0;
+
+	baseIR = baseIR - prevOficial - prevComplementar - truncar(dependentes * DEDUCAO_POR_DEPENDENTE, 2) - outrasDeducoes;
+	if (baseIR < 0) baseIR = 0;
+
+	var ir = calcularIR(baseIR);
+
+	var liquida = truncar(bruta - redutor - prevOficial - prevComplementar - ir, 2);
+
+	// ---------- saída ----------
+	$('#outLiquida').text(formatarBRL(liquida));
+	$('#outBrutaMini').text('R$ ' + formatarBRL(bruta));
+
+	$('#lVenc').text('R$ ' + formatarBRL(vencBasico));
+	$('#lUpv').text('R$ ' + formatarBRL(upvTotal));
+	$('#lPeric').text('R$ ' + formatarBRL(periculosidade));
+	$('#lAjuda').text('R$ ' + formatarBRL(ajudaCusto));
+	$('#lAts').text('R$ ' + formatarBRL(ats));
+	$('#lBruta').text('R$ ' + formatarBRL(bruta));
+
+	$('#lRedutor').text('- R$ ' + formatarBRL(redutor));
+	$('#lPrevOficial').text('- R$ ' + formatarBRL(prevOficial));
+	$('#lPrevComplementar').text('- R$ ' + formatarBRL(prevComplementar));
+	$('#lIr').text('- R$ ' + formatarBRL(ir));
+	$('#lLiquida').text('R$ ' + formatarBRL(liquida));
+}
+
+// ======================= EVENTOS =======================
+$(document).ready(function() {
+	$('#dependentes').on('input', function() {
+		var v = this.value.replace(/[^0-9]/g, '');
+		if (v.length > 0) {
+			var n = parseInt(v, 10);
+			if (n > 99) n = 99;
+			v = String(n);
+		}
+		this.value = v;
+		calcular();
+	});
+
+	$('#padrao, #emFormacao, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes')
+		.on('change input', calcular);
+
+	atualizarVisibilidade();
+	calcular();
+});
+</script>
+</body>
+</html>
