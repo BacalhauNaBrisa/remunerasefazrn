@@ -449,6 +449,22 @@ footer a{color:var(--ink-600);}
 			</div>
 		</div>
 
+		<div class="card">
+			<h2>Descontos consignados em folha</h2>
+			<div class="field">
+				<div class="check-row">
+					<input type="checkbox" id="descSindifern"/>
+					<span>Sindifern — 0,5% sobre vencimento básico + UPVs</span>
+				</div>
+			</div>
+			<div class="field">
+				<div class="check-row">
+					<input type="checkbox" id="descAsfarn"/>
+					<span>Asfarn — 0,4% sobre vencimento básico + UPVs</span>
+				</div>
+			</div>
+		</div>
+
 		<button id="btnCalcular" style="display:none">Calcular</button>
 	</div>
 
@@ -474,6 +490,7 @@ footer a{color:var(--ink-600);}
 			<div class="bline sub"><span class="lbl">Desconto previdenciário oficial</span><span class="num" id="lPrevOficial">R$ 0,00</span></div>
 			<div class="bline sub" id="linhaPrevComplementar"><span class="lbl">Desconto previdenciário complementar</span><span class="num" id="lPrevComplementar">R$ 0,00</span></div>
 			<div class="bline sub"><span class="lbl">Imposto de renda</span><span class="num" id="lIr">R$ 0,00</span></div>
+			<div class="bline sub"><span class="lbl">Descontos consignados em folha</span><span class="num" id="lConsignados">R$ 0,00</span></div>
 			<div class="bline total"><span class="lbl">Remuneração líquida</span><span class="num" id="lLiquida">R$ 0,00</span></div>
 		</div>
 
@@ -640,7 +657,14 @@ function calcular() {
 
 	var ir = calcularIR(baseIR);
 
-	var liquida = truncar(bruta - redutor - prevOficial - prevComplementar - ir, 2);
+	// Descontos consignados em folha (Sindifern / Asfarn) — sobre vencimento básico + UPVs
+	var baseConsignado = truncar(vencBasico + upvTotal, 2);
+	var descConsignados = 0;
+	if ($('#descSindifern').is(':checked')) descConsignados += truncar(baseConsignado * 0.005, 2);
+	if ($('#descAsfarn').is(':checked')) descConsignados += truncar(baseConsignado * 0.004, 2);
+	descConsignados = truncar(descConsignados, 2);
+
+	var liquida = truncar(bruta - redutor - prevOficial - prevComplementar - ir - descConsignados, 2);
 
 	// ---------- saída ----------
 	$('#outLiquida').text(formatarBRL(liquida));
@@ -657,6 +681,7 @@ function calcular() {
 	$('#lPrevOficial').text('- R$ ' + formatarBRL(prevOficial));
 	$('#lPrevComplementar').text('- R$ ' + formatarBRL(prevComplementar));
 	$('#lIr').text('- R$ ' + formatarBRL(ir));
+	$('#lConsignados').text('- R$ ' + formatarBRL(descConsignados));
 	$('#lLiquida').text('R$ ' + formatarBRL(liquida));
 }
 
@@ -673,7 +698,7 @@ $(document).ready(function() {
 		calcular();
 	});
 
-	$('#padrao, #emFormacao, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes')
+	$('#padrao, #emFormacao, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn')
 		.on('change input', calcular);
 
 	atualizarVisibilidade();
