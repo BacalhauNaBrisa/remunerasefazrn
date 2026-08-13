@@ -581,12 +581,15 @@ const IR_PCTS    = [0, 0.075, 0.15, 0.225, 0.275];
 // ======================= UTILITÁRIOS =======================
 function truncar(valor, casas) {
 	casas = (casas === undefined) ? 2 : casas;
+	var resultado;
 	if (valor <= 0) {
 		var fatorN = Math.pow(10, casas);
-		return Math.ceil(valor * fatorN - 1e-6) / fatorN; // trunca em direção ao zero p/ negativos
+		resultado = Math.ceil(valor * fatorN - 1e-6) / fatorN; // trunca em direção ao zero p/ negativos
+	} else {
+		var fator = Math.pow(10, casas);
+		resultado = Math.floor(valor * fator + 1e-6) / fator;
 	}
-	var fator = Math.pow(10, casas);
-	return Math.floor(valor * fator + 1e-6) / fator;
+	return resultado === 0 ? 0 : resultado; // evita -0 (que exibiria "R$ -0,00")
 }
 
 function formatarBRL(valor) {
