@@ -163,6 +163,46 @@ select:focus, input:focus{
 	border-color:var(--navy-700);
 	box-shadow:0 0 0 3px rgba(39,75,125,.15);
 }
+.toggle-row{
+	display:flex;
+	align-items:center;
+	justify-content:space-between;
+	gap:14px;
+	margin-top:10px;
+	padding:11px 13px;
+	background:var(--cream-100);
+	border:1px solid var(--line);
+	border-radius:7px;
+}
+.toggle-row span{font-size:12.5px; color:var(--ink-900); line-height:1.4;}
+.toggle-switch{
+	position:relative;
+	display:inline-block;
+	width:42px;
+	height:24px;
+	flex-shrink:0;
+}
+.toggle-switch input{opacity:0; width:0; height:0; position:absolute;}
+.toggle-switch .slider{
+	position:absolute;
+	cursor:pointer;
+	inset:0;
+	background:#c7c0aa;
+	border-radius:999px;
+	transition:background .15s;
+}
+.toggle-switch .slider::before{
+	content:"";
+	position:absolute;
+	height:18px; width:18px;
+	left:3px; top:3px;
+	background:#fff;
+	border-radius:50%;
+	transition:transform .15s;
+	box-shadow:0 1px 3px rgba(0,0,0,.25);
+}
+.toggle-switch input:checked + .slider{background:var(--danger);}
+.toggle-switch input:checked + .slider::before{transform:translateX(18px);}
 .check-row{
 	display:flex;
 	gap:10px;
@@ -348,11 +388,11 @@ footer a{color:var(--ink-600);}
 			<table class="ref">
 				<thead><tr><th>Padrão</th><th class="num">Vencimento básico</th><th class="num">Qtd. de UPVs</th></tr></thead>
 				<tbody>
-					<tr><td>AFRE-1</td><td class="num">R$ 23.045,69</td><td class="num">34,23</td></tr>
-					<tr><td>AFRE-2</td><td class="num">R$ 24.432,12</td><td class="num">36,29</td></tr>
-					<tr><td>AFRE-3</td><td class="num">R$ 26.033,72</td><td class="num">38,67</td></tr>
-					<tr><td>AFRE-4</td><td class="num">R$ 30.775,60</td><td class="num">45,71</td></tr>
-					<tr><td>AFRE-5</td><td class="num">R$ 33.665,36</td><td class="num">50,00</td></tr>
+					<tr><td>AFRE-1</td><td class="num">R$ 23.369,16</td><td class="num">34,23</td></tr>
+					<tr><td>AFRE-2</td><td class="num">R$ 24.775,06</td><td class="num">36,29</td></tr>
+					<tr><td>AFRE-3</td><td class="num">R$ 26.399,15</td><td class="num">38,67</td></tr>
+					<tr><td>AFRE-4</td><td class="num">R$ 31.207,56</td><td class="num">45,71</td></tr>
+					<tr><td>AFRE-5</td><td class="num">R$ 34.137,86</td><td class="num">50,00</td></tr>
 				</tbody>
 			</table>
 			<div class="citation">O valor unitário de uma UPV é de R$ 294,64, conforme Resolução Interadministrativa nº 50/2026 — SEAD/SEFAZ, de 04 de março de 2026 (publicada no DOE-RN de 28 de março de 2026). A quantidade de UPVs foi estabelecida pelo Decreto nº 35.305, de 12 de fevereiro de 2026 (publicado no DOE-RN de 13 de fevereiro de 2026).</div>
@@ -390,6 +430,13 @@ footer a{color:var(--ink-600);}
 			</div>
 
 			<div class="hint">O adicional de periculosidade (30% do vencimento básico) é devido em todos os padrões, independentemente das UPVs, conforme § 5º do Art. 56 da Lei Complementar nº 799/2025 (LOAT-RN), e não compõe a base previdenciária.</div>
+			<div class="toggle-row">
+				<span>Retirar o adicional de periculosidade do cálculo</span>
+				<label class="toggle-switch">
+					<input type="checkbox" id="excluirPericulosidade"/>
+					<span class="slider"></span>
+				</label>
+			</div>
 		</div>
 
 		<div class="card">
@@ -510,11 +557,11 @@ footer a{color:var(--ink-600);}
 <script>
 // ======================= CONSTANTES =======================
 const PADROES = {
-	'AFRE-1': { venc: 23045.69, upv: 34.23 },
-	'AFRE-2': { venc: 24432.12, upv: 36.29 },
-	'AFRE-3': { venc: 26033.72, upv: 38.67 },
-	'AFRE-4': { venc: 30775.60, upv: 45.71 },
-	'AFRE-5': { venc: 33665.36, upv: 50.00 }
+	'AFRE-1': { venc: 23369.16, upv: 34.23 },
+	'AFRE-2': { venc: 24775.06, upv: 36.29 },
+	'AFRE-3': { venc: 26399.15, upv: 38.67 },
+	'AFRE-4': { venc: 31207.56, upv: 45.71 },
+	'AFRE-5': { venc: 34137.86, upv: 50.00 }
 };
 const VALOR_UPV = 294.64;
 const PERICULOSIDADE_PCT = 0.30;
@@ -605,7 +652,7 @@ function calcular() {
 	var vencBasico = padrao.venc;
 	var upvTotal = emFormacao ? 0 : truncar(padrao.upv * VALOR_UPV, 2);
 
-	var periculosidade = truncar(vencBasico * PERICULOSIDADE_PCT, 2);
+	var periculosidade = $('#excluirPericulosidade').is(':checked') ? 0 : truncar(vencBasico * PERICULOSIDADE_PCT, 2);
 
 	var dias = parseInt($('#diasAjuda').val(), 10) || 0;
 	var ajudaCusto = truncar(AJUDA_CUSTO_POR_DIA * dias, 2);
@@ -698,7 +745,7 @@ $(document).ready(function() {
 		calcular();
 	});
 
-	$('#padrao, #emFormacao, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn')
+	$('#padrao, #emFormacao, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn, #excluirPericulosidade')
 		.on('change input', calcular);
 
 	atualizarVisibilidade();
