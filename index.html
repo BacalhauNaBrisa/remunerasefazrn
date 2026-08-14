@@ -457,7 +457,7 @@ footer a{color:var(--ink-600);}
 
 			<div class="field">
 				<label for="regime">Regime previdenciário</label>
-				<select id="regime">
+				<select id="regime" autocomplete="off">
 					<option value="RPPS">RPPS</option>
 					<option value="COMPLEMENTAR" selected>Previdência Complementar</option>
 				</select>
@@ -766,6 +766,8 @@ function calcular() {
 
 // ======================= EVENTOS =======================
 $(document).ready(function() {
+	$('#regime').val('COMPLEMENTAR');
+
 	$('#dependentes').on('input', function() {
 		var v = this.value.replace(/[^0-9]/g, '');
 		if (v.length > 0) {
