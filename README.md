@@ -24,7 +24,7 @@ O projeto é uma ferramenta de estimativa pessoal, sem qualquer vínculo institu
 ## Como usar
 
 1. Escolha o **padrão remuneratório** (AFRE-1 a AFRE-5).
-2. Preencha as verbas adicionais (dias de Ajuda de Custo, ATS, horas noturnas), e use o toggle para excluir o adicional de periculosidade do cálculo, se desejar.
+2. Preencha as verbas adicionais (dias de Ajuda de Custo, ATS, horas noturnas).
 3. Escolha o **teto remuneratório** vigente e o **regime previdenciário**.
 4. Informe dependentes e outras deduções para o Imposto de Renda, e ative os toggles de descontos consignados (Sindifern/Asfarn), se aplicável.
 5. O painel à direita ("Remuneração líquida estimada") recalcula automaticamente a cada alteração — não há botão de "calcular".
@@ -39,7 +39,7 @@ Todo o cálculo roda **no navegador do usuário**, em JavaScript puro (nenhum da
 |---|---|
 | **Vencimento básico** | Valor fixo por padrão (AFRE-1 a AFRE-5), conforme tabela na própria página (que também exibe o valor monetário total das UPVs por padrão). |
 | **UPVs** (Unidade de Parcela Variável) | `quantidade de UPVs do padrão × R$ 294,64`. Zerada se o padrão for AFRE-1 e o usuário ativar o toggle "em curso de formação" (Art. 46 da LOAT-RN). |
-| **Adicional de periculosidade** | `30% do vencimento básico`, devido por padrão em todos os padrões, independente das UPVs; pode ser opcionalmente excluído do cálculo através de um toggle (desligado por padrão, ou seja, contabilizado). |
+| **Adicional de periculosidade** | `30% do vencimento básico`, sempre devido em todos os padrões, independente das UPVs. |
 | **Ajuda de Custo Operacional de Fiscalização** | Valor fixo por dia = `2,30% × (vencimento básico do AFRE-5 + UPVs do AFRE-5)`, multiplicado pelo número de dias informado (0 a 7). É indenizatória: não sofre desconto e não entra nas bases previdenciária/IR. |
 | **ATS** (Adicional por Tempo de Serviço) | Percentual (0% a 35%, conforme faixa de tempo escolhida) `× vencimento básico`. |
 | **Adicional noturno** | Calculado sobre `vencimento básico + UPVs + periculosidade + ATS`, dividido por 150 (horas mensais) para obter o valor-hora normal; esse valor-hora é multiplicado por 25% (acréscimo noturno) e pelo fator `60/52,5` (hora noturna reduzida de 52min30s), resultando no valor-hora noturno, que é então multiplicado pela quantidade de horas noturnas informada (0 a 56), conforme art. 82 da Lei Complementar nº 122/1994 (RJU-RN). É integralmente remuneratório. |

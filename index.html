@@ -435,13 +435,6 @@ footer a{color:var(--ink-600);}
 			<div class="field">
 				<label>Adicional de periculosidade</label>
 				<div class="hint">O adicional de periculosidade (30% do vencimento básico) é devido em todos os padrões, independentemente das UPVs, conforme § 5º do Art. 56 da Lei Complementar nº 799/2025 (LOAT-RN), e não compõe a base previdenciária.</div>
-				<div class="toggle-row">
-					<span>Retirar o adicional de periculosidade do cálculo</span>
-					<label class="toggle-switch">
-						<input type="checkbox" id="excluirPericulosidade"/>
-						<span class="slider"></span>
-					</label>
-				</div>
 			</div>
 
 			<div class="field">
@@ -677,7 +670,7 @@ function calcular() {
 	var vencBasico = padrao.venc;
 	var upvTotal = emFormacao ? 0 : truncar(padrao.upv * VALOR_UPV, 2);
 
-	var periculosidade = $('#excluirPericulosidade').is(':checked') ? 0 : truncar(vencBasico * PERICULOSIDADE_PCT, 2);
+	var periculosidade = truncar(vencBasico * PERICULOSIDADE_PCT, 2);
 
 	var dias = parseInt($('#diasAjuda').val(), 10) || 0;
 	var ajudaCusto = truncar(AJUDA_CUSTO_POR_DIA * dias, 2);
@@ -795,7 +788,7 @@ $(document).ready(function() {
 		calcular();
 	});
 
-	$('#padrao, #emFormacao, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn, #excluirPericulosidade')
+	$('#padrao, #emFormacao, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn')
 		.on('change input', calcular);
 
 	atualizarVisibilidade();
