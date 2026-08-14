@@ -378,21 +378,24 @@ footer a{color:var(--ink-600);}
 			</div>
 
 			<div class="field hidden" id="campoFormacao">
-				<div class="check-row">
-					<input type="checkbox" id="emFormacao"/>
+				<div class="toggle-row">
 					<span>Em curso de formação conforme Art. 46 da Lei Complementar nº 799 de 08/12/2025 (LOAT-RN)?</span>
+					<label class="toggle-switch">
+						<input type="checkbox" id="emFormacao"/>
+						<span class="slider"></span>
+					</label>
 				</div>
 				<div class="hint">Marcando esta opção, as Unidades de Parcela Variável (UPVs) não entram no cálculo da remuneração.</div>
 			</div>
 
 			<table class="ref">
-				<thead><tr><th>Padrão</th><th class="num">Vencimento básico</th><th class="num">Qtd. de UPVs</th></tr></thead>
+				<thead><tr><th>Padrão</th><th class="num">Vencimento básico</th><th class="num">Qtd. de UPVs</th><th class="num">Valor das UPVs</th></tr></thead>
 				<tbody>
-					<tr><td>AFRE-1</td><td class="num">R$ 23.369,16</td><td class="num">34,23</td></tr>
-					<tr><td>AFRE-2</td><td class="num">R$ 24.775,06</td><td class="num">36,29</td></tr>
-					<tr><td>AFRE-3</td><td class="num">R$ 26.399,15</td><td class="num">38,67</td></tr>
-					<tr><td>AFRE-4</td><td class="num">R$ 31.207,56</td><td class="num">45,71</td></tr>
-					<tr><td>AFRE-5</td><td class="num">R$ 34.137,86</td><td class="num">50,00</td></tr>
+					<tr><td>AFRE-1</td><td class="num">R$ 23.369,16</td><td class="num">34,23</td><td class="num">R$ 10.085,52</td></tr>
+					<tr><td>AFRE-2</td><td class="num">R$ 24.775,06</td><td class="num">36,29</td><td class="num">R$ 10.692,48</td></tr>
+					<tr><td>AFRE-3</td><td class="num">R$ 26.399,15</td><td class="num">38,67</td><td class="num">R$ 11.393,72</td></tr>
+					<tr><td>AFRE-4</td><td class="num">R$ 31.207,56</td><td class="num">45,71</td><td class="num">R$ 13.467,99</td></tr>
+					<tr><td>AFRE-5</td><td class="num">R$ 34.137,86</td><td class="num">50,00</td><td class="num">R$ 14.732,00</td></tr>
 				</tbody>
 			</table>
 			<div class="citation">O valor unitário de uma UPV é de R$ 294,64, conforme Resolução Interadministrativa nº 50/2026 — SEAD/SEFAZ, de 04 de março de 2026 (publicada no DOE-RN de 28 de março de 2026). A quantidade de UPVs foi estabelecida pelo Decreto nº 35.305, de 12 de fevereiro de 2026 (publicado no DOE-RN de 13 de fevereiro de 2026).</div>
@@ -429,13 +432,22 @@ footer a{color:var(--ink-600);}
 				</select>
 			</div>
 
-			<div class="hint">O adicional de periculosidade (30% do vencimento básico) é devido em todos os padrões, independentemente das UPVs, conforme § 5º do Art. 56 da Lei Complementar nº 799/2025 (LOAT-RN), e não compõe a base previdenciária.</div>
-			<div class="toggle-row">
-				<span>Retirar o adicional de periculosidade do cálculo</span>
-				<label class="toggle-switch">
-					<input type="checkbox" id="excluirPericulosidade"/>
-					<span class="slider"></span>
-				</label>
+			<div class="field">
+				<label>Adicional de periculosidade</label>
+				<div class="hint">O adicional de periculosidade (30% do vencimento básico) é devido em todos os padrões, independentemente das UPVs, conforme § 5º do Art. 56 da Lei Complementar nº 799/2025 (LOAT-RN), e não compõe a base previdenciária.</div>
+				<div class="toggle-row">
+					<span>Retirar o adicional de periculosidade do cálculo</span>
+					<label class="toggle-switch">
+						<input type="checkbox" id="excluirPericulosidade"/>
+						<span class="slider"></span>
+					</label>
+				</div>
+			</div>
+
+			<div class="field">
+				<label for="horasNoturnas">Adicional noturno</label>
+				<input type="text" inputmode="numeric" id="horasNoturnas" value="0"/>
+				<div class="hint">O serviço noturno, prestado em horário compreendido entre 22 (vinte e duas) horas de um dia e 05 (cinco) horas do dia seguinte, tem o valor-hora acrescido de 25% (vinte e cinco por cento), computando-se cada hora como de 52 (cinquenta e dois) minutos e 30 (trinta) segundos, em conformidade com o art. 82 da Lei Complementar nº 122, de 30 de junho de 1994 (Regime Jurídico Único dos Servidores do RN).</div>
 			</div>
 		</div>
 
@@ -499,15 +511,21 @@ footer a{color:var(--ink-600);}
 		<div class="card">
 			<h2>Descontos consignados em folha</h2>
 			<div class="field">
-				<div class="check-row">
-					<input type="checkbox" id="descSindifern"/>
+				<div class="toggle-row">
 					<span>Sindifern — 0,5% sobre vencimento básico + UPVs</span>
+					<label class="toggle-switch">
+						<input type="checkbox" id="descSindifern"/>
+						<span class="slider"></span>
+					</label>
 				</div>
 			</div>
 			<div class="field">
-				<div class="check-row">
-					<input type="checkbox" id="descAsfarn"/>
+				<div class="toggle-row">
 					<span>Asfarn — 0,4% sobre vencimento básico + UPVs</span>
+					<label class="toggle-switch">
+						<input type="checkbox" id="descAsfarn"/>
+						<span class="slider"></span>
+					</label>
 				</div>
 			</div>
 		</div>
@@ -530,6 +548,7 @@ footer a{color:var(--ink-600);}
 			<div class="bline add"><span class="lbl">Adicional de periculosidade</span><span class="num" id="lPeric">R$ 0,00</span></div>
 			<div class="bline add"><span class="lbl">Ajuda de Custo Operacional</span><span class="num" id="lAjuda">R$ 0,00</span></div>
 			<div class="bline add"><span class="lbl">ATS</span><span class="num" id="lAts">R$ 0,00</span></div>
+			<div class="bline add"><span class="lbl">Adicional noturno</span><span class="num" id="lNoturno">R$ 0,00</span></div>
 			<div class="bline total"><span class="lbl">Remuneração bruta</span><span class="num" id="lBruta">R$ 0,00</span></div>
 
 			<h3 style="margin-top:18px;">Deduções</h3>
@@ -566,6 +585,9 @@ const PADROES = {
 const VALOR_UPV = 294.64;
 const PERICULOSIDADE_PCT = 0.30;
 const DEDUCAO_POR_DEPENDENTE = 189.59;
+const HORAS_MENSAIS = 150; // 30h semanais x 5 "semanas comerciais"
+const ADICIONAL_NOTURNO_PCT = 0.25;
+const FATOR_HORA_NOTURNA_REDUZIDA = 60 / 52.5;
 
 const FAIXAS_PREV = [
 	{ ini: 0,        fim: 4862.18,  pct: 0.11 },
@@ -663,17 +685,29 @@ function calcular() {
 	var atsPct = parseFloat($('#ats').val());
 	var ats = truncar(vencBasico * atsPct, 2);
 
-	var bruta = truncar(vencBasico + upvTotal + periculosidade + ajudaCusto + ats, 2);
+	var horasNoturnas = parseInt($('#horasNoturnas').val(), 10) || 0;
+	if (horasNoturnas < 0) horasNoturnas = 0;
+	if (horasNoturnas > 56) horasNoturnas = 56;
+	var somaBaseNoturno = vencBasico + upvTotal + periculosidade + ats;
+	var valorHoraNormal = somaBaseNoturno / HORAS_MENSAIS;
+	var valorHoraNoturna = valorHoraNormal * ADICIONAL_NOTURNO_PCT * FATOR_HORA_NOTURNA_REDUZIDA;
+	var adicionalNoturno = truncar(valorHoraNoturna * horasNoturnas, 2);
+
+	var bruta = truncar(vencBasico + upvTotal + periculosidade + ajudaCusto + ats + adicionalNoturno, 2);
 
 	var teto = parseFloat($('#teto').val());
 
-	// Redutor Art. 37/CF
-	var somaSemAjuda = truncar(vencBasico + upvTotal + periculosidade + ats, 2);
+	// Redutor Art. 37/CF — adicional noturno é remuneratório e entra nessa soma
+	var somaSemAjuda = truncar(vencBasico + upvTotal + periculosidade + ats + adicionalNoturno, 2);
 	var redutor = somaSemAjuda > teto ? truncar(somaSemAjuda - teto, 2) : 0;
 
-	// Base previdenciária
+	// Base previdenciária oficial (RPPS / primeiras faixas do regime Complementar) — NÃO inclui o adicional noturno
 	var basePrev = truncar(vencBasico + upvTotal + ats, 2);
 	if (basePrev > teto) basePrev = teto;
+
+	// Base para o desconto previdenciário complementar — inclui o adicional noturno
+	var baseComplementar = truncar(vencBasico + upvTotal + ats + adicionalNoturno, 2);
+	if (baseComplementar > teto) baseComplementar = teto;
 
 	var regime = $('#regime').val();
 	var prevOficial, prevComplementar = 0;
@@ -685,14 +719,14 @@ function calcular() {
 		prevOficial = calcularDescontoPrevidenciario(basePrev, faixasLimitadas);
 
 		var aliquotaComp = parseFloat($('#aliquotaComplementar').val());
-		var difComp = basePrev - FAIXAS_PREV[1].fim; // acima de R$ 8.475,55
+		var difComp = baseComplementar - FAIXAS_PREV[1].fim; // acima de R$ 8.475,55
 		if (difComp > 0) {
 			prevComplementar = truncar(difComp * aliquotaComp, 2);
 		}
 	}
 
-	// Base do Imposto de Renda
-	var baseIR = truncar(vencBasico + upvTotal + periculosidade + ats, 2);
+	// Base do Imposto de Renda — inclui o adicional noturno
+	var baseIR = truncar(vencBasico + upvTotal + periculosidade + ats + adicionalNoturno, 2);
 	if (baseIR > teto) baseIR = teto;
 
 	var dependentes = parseInt($('#dependentes').val(), 10) || 0;
@@ -707,8 +741,9 @@ function calcular() {
 
 	var ir = calcularIR(baseIR);
 
-	// Descontos consignados em folha (Sindifern / Asfarn) — sobre vencimento básico + UPVs
+	// Descontos consignados em folha (Sindifern / Asfarn) — sobre vencimento básico + UPVs, limitado ao teto
 	var baseConsignado = truncar(vencBasico + upvTotal, 2);
+	if (baseConsignado > teto) baseConsignado = teto;
 	var descConsignados = 0;
 	if ($('#descSindifern').is(':checked')) descConsignados += truncar(baseConsignado * 0.005, 2);
 	if ($('#descAsfarn').is(':checked')) descConsignados += truncar(baseConsignado * 0.004, 2);
@@ -725,6 +760,7 @@ function calcular() {
 	$('#lPeric').text('R$ ' + formatarBRL(periculosidade));
 	$('#lAjuda').text('R$ ' + formatarBRL(ajudaCusto));
 	$('#lAts').text('R$ ' + formatarBRL(ats));
+	$('#lNoturno').text('R$ ' + formatarBRL(adicionalNoturno));
 	$('#lBruta').text('R$ ' + formatarBRL(bruta));
 
 	$('#lRedutor').text('- R$ ' + formatarBRL(redutor));
@@ -742,6 +778,17 @@ $(document).ready(function() {
 		if (v.length > 0) {
 			var n = parseInt(v, 10);
 			if (n > 99) n = 99;
+			v = String(n);
+		}
+		this.value = v;
+		calcular();
+	});
+
+	$('#horasNoturnas').on('input', function() {
+		var v = this.value.replace(/[^0-9]/g, '');
+		if (v.length > 0) {
+			var n = parseInt(v, 10);
+			if (n > 56) n = 56;
 			v = String(n);
 		}
 		this.value = v;
