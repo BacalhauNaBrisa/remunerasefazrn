@@ -452,7 +452,13 @@ footer a{color:var(--ink-600);}
 				<select id="teto">
 					<option value="41845.49">Teto atual (Desembargador do TJ-RN): R$ 41.845,49</option>
 					<option value="46366.19">Teto janeiro/2027 (Ministro do STF): R$ 46.366,19</option>
+					<option value="PERSONALIZADO">Teto remuneratório personalizado</option>
 				</select>
+			</div>
+
+			<div class="field hidden" id="campoTetoPersonalizado">
+				<label for="tetoPersonalizado">Valor do teto remuneratório personalizado</label>
+				<input type="text" inputmode="numeric" id="tetoPersonalizado" placeholder="R$ 0,00" autocomplete="off"/>
 			</div>
 
 			<div class="field">
@@ -658,6 +664,16 @@ function atualizarVisibilidade() {
 	var regime = $('#regime').val();
 	$('#campoAliquotaComplementar').toggleClass('hidden', regime !== 'COMPLEMENTAR');
 	$('#linhaPrevComplementar').toggleClass('hidden', regime !== 'COMPLEMENTAR');
+
+	$('#campoTetoPersonalizado').toggleClass('hidden', $('#teto').val() !== 'PERSONALIZADO');
+}
+
+function formatarInputMoeda(el) {
+	var digitos = el.value.replace(/\D/g, '');
+	if (digitos.length > 7) digitos = digitos.slice(0, 7);
+	var numero = digitos.length ? parseInt(digitos, 10) / 100 : 0;
+	el.value = digitos.length ? formatarBRL(numero) : '';
+	$(el).data('valor', numero);
 }
 
 // ======================= CÁLCULO PRINCIPAL =======================
@@ -688,7 +704,9 @@ function calcular() {
 
 	var bruta = truncar(vencBasico + upvTotal + periculosidade + ajudaCusto + ats + adicionalNoturno, 2);
 
-	var teto = parseFloat($('#teto').val());
+	var teto = $('#teto').val() === 'PERSONALIZADO'
+		? (parseFloat($('#tetoPersonalizado').data('valor')) || 0)
+		: parseFloat($('#teto').val());
 
 	// Redutor Art. 37/CF — adicional noturno é remuneratório e entra nessa soma
 	var somaSemAjuda = truncar(vencBasico + upvTotal + periculosidade + ats + adicionalNoturno, 2);
@@ -787,6 +805,11 @@ $(document).ready(function() {
 			v = String(n);
 		}
 		this.value = v;
+		calcular();
+	});
+
+	$('#tetoPersonalizado').on('input', function() {
+		formatarInputMoeda(this);
 		calcular();
 	});
 
