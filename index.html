@@ -399,6 +399,19 @@ footer a{color:var(--ink-600);}
 				</tbody>
 			</table>
 			<div class="citation">O valor unitário de uma UPV é de R$ 294,64, conforme Resolução Interadministrativa nº 50/2026 — SEAD/SEFAZ, de 04 de março de 2026 (publicada no DOE-RN de 28 de março de 2026). A quantidade de UPVs foi estabelecida pelo Decreto nº 35.305, de 12 de fevereiro de 2026 (publicado no DOE-RN de 13 de fevereiro de 2026).</div>
+
+			<div class="toggle-row" style="margin-top:14px;">
+				<span>Personalizar UPV</span>
+				<label class="toggle-switch">
+					<input type="checkbox" id="personalizarUPV"/>
+					<span class="slider"></span>
+				</label>
+			</div>
+
+			<div class="field hidden" id="campoUpvPersonalizada" style="margin-top:12px;">
+				<label for="upvPersonalizada">Valor personalizado da UPV</label>
+				<input type="text" inputmode="numeric" id="upvPersonalizada" placeholder="R$ 0,00" autocomplete="off"/>
+			</div>
 		</div>
 
 		<div class="card">
@@ -618,10 +631,9 @@ function formatarBRL(valor) {
 	return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-// valor fixo por dia da Ajuda de Custo Operacional de Fiscalização
-// (2,30% sobre vencimento básico + UPVs do AFRE-5)
-const AFRE5_UPV_TOTAL = truncar(PADROES['AFRE-5'].upv * VALOR_UPV, 2);
-const AJUDA_CUSTO_POR_DIA = truncar(0.023 * (PADROES['AFRE-5'].venc + AFRE5_UPV_TOTAL), 2);
+// valor fixo por dia da Ajuda de Custo Operacional de Fiscalização e demais cálculos
+// que dependem do valor unitário da UPV são recalculados dinamicamente em calcular(),
+// pois esse valor pode ser sobrescrito pelo usuário ("Personalizar UPV").
 
 // ======================= CÁLCULO DE FAIXAS =======================
 function calcularDescontoPrevidenciario(base, faixas) {
@@ -666,11 +678,13 @@ function atualizarVisibilidade() {
 	$('#linhaPrevComplementar').toggleClass('hidden', regime !== 'COMPLEMENTAR');
 
 	$('#campoTetoPersonalizado').toggleClass('hidden', $('#teto').val() !== 'PERSONALIZADO');
+	$('#campoUpvPersonalizada').toggleClass('hidden', !$('#personalizarUPV').is(':checked'));
 }
 
-function formatarInputMoeda(el) {
+function formatarInputMoeda(el, maxDigitos) {
+	maxDigitos = maxDigitos || 7;
 	var digitos = el.value.replace(/\D/g, '');
-	if (digitos.length > 7) digitos = digitos.slice(0, 7);
+	if (digitos.length > maxDigitos) digitos = digitos.slice(0, maxDigitos);
 	var numero = digitos.length ? parseInt(digitos, 10) / 100 : 0;
 	el.value = digitos.length ? formatarBRL(numero) : '';
 	$(el).data('valor', numero);
@@ -684,12 +698,20 @@ function calcular() {
 	var emFormacao = ($('#padrao').val() === 'AFRE-1') && $('#emFormacao').is(':checked');
 
 	var vencBasico = padrao.venc;
-	var upvTotal = emFormacao ? 0 : truncar(padrao.upv * VALOR_UPV, 2);
+
+	var valorUpvAtual = ($('#personalizarUPV').is(':checked'))
+		? (parseFloat($('#upvPersonalizada').data('valor')) || 0)
+		: VALOR_UPV;
+
+	var upvTotal = emFormacao ? 0 : truncar(padrao.upv * valorUpvAtual, 2);
+
+	var afre5UpvTotal = truncar(PADROES['AFRE-5'].upv * valorUpvAtual, 2);
+	var ajudaCustoPorDia = truncar(0.023 * (PADROES['AFRE-5'].venc + afre5UpvTotal), 2);
 
 	var periculosidade = truncar(vencBasico * PERICULOSIDADE_PCT, 2);
 
 	var dias = parseInt($('#diasAjuda').val(), 10) || 0;
-	var ajudaCusto = truncar(AJUDA_CUSTO_POR_DIA * dias, 2);
+	var ajudaCusto = truncar(ajudaCustoPorDia * dias, 2);
 
 	var atsPct = parseFloat($('#ats').val());
 	var ats = truncar(vencBasico * atsPct, 2);
@@ -809,11 +831,16 @@ $(document).ready(function() {
 	});
 
 	$('#tetoPersonalizado').on('input', function() {
-		formatarInputMoeda(this);
+		formatarInputMoeda(this, 7);
 		calcular();
 	});
 
-	$('#padrao, #emFormacao, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn')
+	$('#upvPersonalizada').on('input', function() {
+		formatarInputMoeda(this, 5);
+		calcular();
+	});
+
+	$('#padrao, #emFormacao, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn, #personalizarUPV')
 		.on('change input', calcular);
 
 	atualizarVisibilidade();
