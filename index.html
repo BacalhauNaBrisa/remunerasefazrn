@@ -506,6 +506,26 @@ footer a{color:var(--ink-600);}
 		</div>
 
 		<div class="card">
+			<h2>Residual do mês anterior</h2>
+			<div class="grid2">
+				<div class="field">
+					<label for="diasBaseAnterior">Base de dias do mês anterior</label>
+					<select id="diasBaseAnterior">
+						<option value="28">28 dias</option>
+						<option value="29">29 dias</option>
+						<option value="30" selected>30 dias</option>
+						<option value="31">31 dias</option>
+					</select>
+				</div>
+				<div class="field">
+					<label for="diasTrabalhadosAnterior">Dias trabalhados no mês anterior</label>
+					<input type="text" inputmode="numeric" id="diasTrabalhadosAnterior" value="0"/>
+				</div>
+			</div>
+			<div class="hint">Calcula um valor residual proporcional (vencimento básico + UPVs + periculosidade + ATS do padrão selecionado) referente aos dias trabalhados no mês anterior, somado à remuneração deste mês como "Residual do mês anterior". A previdência oficial e, se aplicável, a complementar e o redutor Art. 37/CF são apurados separadamente para essa parcela, cada qual com seu próprio limite de teto.</div>
+		</div>
+
+		<div class="card">
 			<h2>Imposto de renda</h2>
 			<div class="grid2">
 				<div class="field">
@@ -561,6 +581,7 @@ footer a{color:var(--ink-600);}
 			<div class="bline add"><span class="lbl">Ajuda de Custo Operacional</span><span class="num" id="lAjuda">R$ 0,00</span></div>
 			<div class="bline add"><span class="lbl">ATS</span><span class="num" id="lAts">R$ 0,00</span></div>
 			<div class="bline add"><span class="lbl">Adicional noturno</span><span class="num" id="lNoturno">R$ 0,00</span></div>
+			<div class="bline add"><span class="lbl">Residual do mês anterior</span><span class="num" id="lResidual">R$ 0,00</span></div>
 			<div class="bline total"><span class="lbl">Remuneração bruta</span><span class="num" id="lBruta">R$ 0,00</span></div>
 
 			<h3 style="margin-top:18px;">Deduções</h3>
@@ -730,37 +751,68 @@ function calcular() {
 		? (parseFloat($('#tetoPersonalizado').data('valor')) || 0)
 		: parseFloat($('#teto').val());
 
-	// Redutor Art. 37/CF — adicional noturno é remuneratório e entra nessa soma
-	var somaSemAjuda = truncar(vencBasico + upvTotal + periculosidade + ats + adicionalNoturno, 2);
-	var redutor = somaSemAjuda > teto ? truncar(somaSemAjuda - teto, 2) : 0;
+	// ---------- Residual do mês anterior (parcela proporcional, calculada por competência própria) ----------
+	var diasBaseAnterior = parseInt($('#diasBaseAnterior').val(), 10) || 30;
+	var diasTrabalhadosAnterior = parseInt($('#diasTrabalhadosAnterior').val(), 10) || 0;
+	if (diasTrabalhadosAnterior < 0) diasTrabalhadosAnterior = 0;
+	if (diasTrabalhadosAnterior > diasBaseAnterior) diasTrabalhadosAnterior = diasBaseAnterior;
+	var fatorResidual = diasTrabalhadosAnterior > 0 ? (diasTrabalhadosAnterior / diasBaseAnterior) : 0;
 
-	// Base previdenciária oficial (RPPS / primeiras faixas do regime Complementar) — NÃO inclui o adicional noturno
-	var basePrev = truncar(vencBasico + upvTotal + ats, 2);
-	if (basePrev > teto) basePrev = teto;
+	var vencResidual = fatorResidual > 0 ? truncar(vencBasico * fatorResidual, 2) : 0;
+	var upvResidual = fatorResidual > 0 ? truncar(upvTotal * fatorResidual, 2) : 0;
+	var periculosidadeResidual = fatorResidual > 0 ? truncar(periculosidade * fatorResidual, 2) : 0;
+	var atsResidual = fatorResidual > 0 ? truncar(ats * fatorResidual, 2) : 0;
+	var residualTotal = truncar(vencResidual + upvResidual + periculosidadeResidual + atsResidual, 2);
 
-	// Base para o desconto previdenciário complementar — inclui o adicional noturno
-	var baseComplementar = truncar(vencBasico + upvTotal + ats + adicionalNoturno, 2);
-	if (baseComplementar > teto) baseComplementar = teto;
+	bruta = truncar(bruta + residualTotal, 2);
+
+	// ---------- Redutor Art. 37/CF — apurado por competência (mês atual e residual), cada qual limitada ao teto ----------
+	var somaSemAjudaAtual = truncar(vencBasico + upvTotal + periculosidade + ats + adicionalNoturno, 2);
+	var redutorAtual = somaSemAjudaAtual > teto ? truncar(somaSemAjudaAtual - teto, 2) : 0;
+	var somaSemAjudaResidual = truncar(vencResidual + upvResidual + periculosidadeResidual + atsResidual, 2);
+	var redutorResidual = somaSemAjudaResidual > teto ? truncar(somaSemAjudaResidual - teto, 2) : 0;
+	var redutor = truncar(redutorAtual + redutorResidual, 2);
+
+	// ---------- Base previdenciária oficial — por competência, cada uma limitada ao teto (NÃO inclui periculosidade nem adicional noturno) ----------
+	var basePrevAtual = truncar(vencBasico + upvTotal + ats, 2);
+	if (basePrevAtual > teto) basePrevAtual = teto;
+	var basePrevResidual = truncar(vencResidual + upvResidual + atsResidual, 2);
+	if (basePrevResidual > teto) basePrevResidual = teto;
+
+	// ---------- Base para o desconto previdenciário complementar — por competência, cada uma limitada ao teto ----------
+	var baseComplementarAtual = truncar(vencBasico + upvTotal + ats + adicionalNoturno, 2);
+	if (baseComplementarAtual > teto) baseComplementarAtual = teto;
+	var baseComplementarResidual = basePrevResidual; // parcela residual não tem adicional noturno próprio
 
 	var regime = $('#regime').val();
 	var prevOficial, prevComplementar = 0;
 
 	if (regime === 'RPPS') {
-		prevOficial = calcularDescontoPrevidenciario(basePrev, FAIXAS_PREV);
+		var oficialAtual = calcularDescontoPrevidenciario(basePrevAtual, FAIXAS_PREV);
+		var oficialResidual = calcularDescontoPrevidenciario(basePrevResidual, FAIXAS_PREV);
+		prevOficial = truncar(oficialAtual + oficialResidual, 2);
 	} else {
 		var faixasLimitadas = [FAIXAS_PREV[0], FAIXAS_PREV[1]];
-		prevOficial = calcularDescontoPrevidenciario(basePrev, faixasLimitadas);
+		var oficialAtualC = calcularDescontoPrevidenciario(basePrevAtual, faixasLimitadas);
+		var oficialResidualC = calcularDescontoPrevidenciario(basePrevResidual, faixasLimitadas);
+		prevOficial = truncar(oficialAtualC + oficialResidualC, 2);
 
 		var aliquotaComp = parseFloat($('#aliquotaComplementar').val());
-		var difComp = baseComplementar - FAIXAS_PREV[1].fim; // acima de R$ 8.475,55
-		if (difComp > 0) {
-			prevComplementar = truncar(difComp * aliquotaComp, 2);
-		}
+
+		// A base do complementar nunca ultrapassa o teto remuneratório selecionado (cada competência já é limitada acima)
+		var difCompAtual = baseComplementarAtual - FAIXAS_PREV[1].fim; // acima de R$ 8.475,55
+		var complementarAtual = difCompAtual > 0 ? truncar(difCompAtual * aliquotaComp, 2) : 0;
+		var difCompResidual = baseComplementarResidual - FAIXAS_PREV[1].fim;
+		var complementarResidual = difCompResidual > 0 ? truncar(difCompResidual * aliquotaComp, 2) : 0;
+
+		prevComplementar = truncar(complementarAtual + complementarResidual, 2);
 	}
 
-	// Base do Imposto de Renda — inclui o adicional noturno
-	var baseIR = truncar(vencBasico + upvTotal + periculosidade + ats + adicionalNoturno, 2);
-	if (baseIR > teto) baseIR = teto;
+	// ---------- Base do Imposto de Renda — soma das duas competências (cada uma limitada ao teto), deduzindo APENAS a previdência oficial ----------
+	var grossIRAtual = truncar(vencBasico + upvTotal + periculosidade + ats + adicionalNoturno, 2);
+	if (grossIRAtual > teto) grossIRAtual = teto;
+	var grossIRResidual = truncar(vencResidual + upvResidual + periculosidadeResidual + atsResidual, 2);
+	if (grossIRResidual > teto) grossIRResidual = teto;
 
 	var dependentes = parseInt($('#dependentes').val(), 10) || 0;
 	if (dependentes < 0) dependentes = 0;
@@ -769,7 +821,8 @@ function calcular() {
 	var outrasDeducoes = parseFloat($('#outrasDeducoes').val());
 	if (isNaN(outrasDeducoes) || outrasDeducoes < 0) outrasDeducoes = 0;
 
-	baseIR = baseIR - prevOficial - prevComplementar - truncar(dependentes * DEDUCAO_POR_DEPENDENTE, 2) - outrasDeducoes;
+	var baseIR = truncar(grossIRAtual + grossIRResidual, 2);
+	baseIR = baseIR - prevOficial - truncar(dependentes * DEDUCAO_POR_DEPENDENTE, 2) - outrasDeducoes;
 	if (baseIR < 0) baseIR = 0;
 
 	var ir = calcularIR(baseIR);
@@ -794,6 +847,7 @@ function calcular() {
 	$('#lAjuda').text('R$ ' + formatarBRL(ajudaCusto));
 	$('#lAts').text('R$ ' + formatarBRL(ats));
 	$('#lNoturno').text('R$ ' + formatarBRL(adicionalNoturno));
+	$('#lResidual').text('R$ ' + formatarBRL(residualTotal));
 	$('#lBruta').text('R$ ' + formatarBRL(bruta));
 
 	$('#lRedutor').text('- R$ ' + formatarBRL(redutor));
@@ -837,6 +891,25 @@ $(document).ready(function() {
 
 	$('#upvPersonalizada').on('input', function() {
 		formatarInputMoeda(this, 5);
+		calcular();
+	});
+
+	$('#diasTrabalhadosAnterior').on('input', function() {
+		var v = this.value.replace(/[^0-9]/g, '');
+		var maxDias = parseInt($('#diasBaseAnterior').val(), 10) || 30;
+		if (v.length > 0) {
+			var n = parseInt(v, 10);
+			if (n > maxDias) n = maxDias;
+			v = String(n);
+		}
+		this.value = v;
+		calcular();
+	});
+
+	$('#diasBaseAnterior').on('change', function() {
+		var maxDias = parseInt(this.value, 10);
+		var atual = parseInt($('#diasTrabalhadosAnterior').val(), 10) || 0;
+		if (atual > maxDias) $('#diasTrabalhadosAnterior').val(maxDias);
 		calcular();
 	});
 
