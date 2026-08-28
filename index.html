@@ -506,6 +506,18 @@ footer a{color:var(--ink-600);}
 		</div>
 
 		<div class="card">
+			<h2>Férias</h2>
+			<div class="toggle-row">
+				<span>Adicional de terço de férias</span>
+				<label class="toggle-switch">
+					<input type="checkbox" id="tercoFerias"/>
+					<span class="slider"></span>
+				</label>
+			</div>
+			<div class="hint" style="margin-top:10px;">Quando ativado, soma-se 1/3 de (vencimento básico + UPVs + ATS + periculosidade) do mês vigente à remuneração bruta. Esse adicional só sofre desconto de Imposto de Renda, apurado à parte, exclusivamente sobre o próprio valor do terço — sem incidência de previdência, redutor Art. 37/CF ou descontos consignados.</div>
+		</div>
+
+		<div class="card">
 			<h2>Residual do mês anterior</h2>
 			<div class="grid2">
 				<div class="field">
@@ -582,6 +594,7 @@ footer a{color:var(--ink-600);}
 			<div class="bline add"><span class="lbl">ATS</span><span class="num" id="lAts">R$ 0,00</span></div>
 			<div class="bline add"><span class="lbl">Adicional noturno</span><span class="num" id="lNoturno">R$ 0,00</span></div>
 			<div class="bline add"><span class="lbl">Residual do mês anterior</span><span class="num" id="lResidual">R$ 0,00</span></div>
+			<div class="bline add"><span class="lbl">Terço de férias</span><span class="num" id="lTerco">R$ 0,00</span></div>
 			<div class="bline total"><span class="lbl">Remuneração bruta</span><span class="num" id="lBruta">R$ 0,00</span></div>
 
 			<h3 style="margin-top:18px;">Deduções</h3>
@@ -589,6 +602,7 @@ footer a{color:var(--ink-600);}
 			<div class="bline sub"><span class="lbl">Desconto previdenciário oficial</span><span class="num" id="lPrevOficial">R$ 0,00</span></div>
 			<div class="bline sub" id="linhaPrevComplementar"><span class="lbl">Desconto previdenciário complementar</span><span class="num" id="lPrevComplementar">R$ 0,00</span></div>
 			<div class="bline sub"><span class="lbl">Imposto de renda</span><span class="num" id="lIr">R$ 0,00</span></div>
+			<div class="bline sub"><span class="lbl">Imposto de renda do terço de férias</span><span class="num" id="lIrTerco">R$ 0,00</span></div>
 			<div class="bline sub"><span class="lbl">Descontos consignados em folha</span><span class="num" id="lConsignados">R$ 0,00</span></div>
 			<div class="bline total"><span class="lbl">Remuneração líquida</span><span class="num" id="lLiquida">R$ 0,00</span></div>
 		</div>
@@ -745,7 +759,12 @@ function calcular() {
 	var valorHoraNoturna = valorHoraNormal * ADICIONAL_NOTURNO_PCT * FATOR_HORA_NOTURNA_REDUZIDA;
 	var adicionalNoturno = truncar(valorHoraNoturna * horasNoturnas, 2);
 
-	var bruta = truncar(vencBasico + upvTotal + periculosidade + ajudaCusto + ats + adicionalNoturno, 2);
+	// ---------- Terço de férias (opcional) — incide só IRPF, calculado à parte ----------
+	var tercoFeriasAtivo = $('#tercoFerias').is(':checked');
+	var tercoFerias = tercoFeriasAtivo ? truncar((vencBasico + upvTotal + ats + periculosidade) / 3, 2) : 0;
+	var irTercoFerias = tercoFeriasAtivo ? calcularIR(tercoFerias) : 0;
+
+	var bruta = truncar(vencBasico + upvTotal + periculosidade + ajudaCusto + ats + adicionalNoturno + tercoFerias, 2);
 
 	var teto = $('#teto').val() === 'PERSONALIZADO'
 		? (parseFloat($('#tetoPersonalizado').data('valor')) || 0)
@@ -835,7 +854,7 @@ function calcular() {
 	if ($('#descAsfarn').is(':checked')) descConsignados += truncar(baseConsignado * 0.004, 2);
 	descConsignados = truncar(descConsignados, 2);
 
-	var liquida = truncar(bruta - redutor - prevOficial - prevComplementar - ir - descConsignados, 2);
+	var liquida = truncar(bruta - redutor - prevOficial - prevComplementar - ir - irTercoFerias - descConsignados, 2);
 
 	// ---------- saída ----------
 	$('#outLiquida').text(formatarBRL(liquida));
@@ -848,12 +867,14 @@ function calcular() {
 	$('#lAts').text('R$ ' + formatarBRL(ats));
 	$('#lNoturno').text('R$ ' + formatarBRL(adicionalNoturno));
 	$('#lResidual').text('R$ ' + formatarBRL(residualTotal));
+	$('#lTerco').text('R$ ' + formatarBRL(tercoFerias));
 	$('#lBruta').text('R$ ' + formatarBRL(bruta));
 
 	$('#lRedutor').text('- R$ ' + formatarBRL(redutor));
 	$('#lPrevOficial').text('- R$ ' + formatarBRL(prevOficial));
 	$('#lPrevComplementar').text('- R$ ' + formatarBRL(prevComplementar));
 	$('#lIr').text('- R$ ' + formatarBRL(ir));
+	$('#lIrTerco').text('- R$ ' + formatarBRL(irTercoFerias));
 	$('#lConsignados').text('- R$ ' + formatarBRL(descConsignados));
 	$('#lLiquida').text('R$ ' + formatarBRL(liquida));
 }
@@ -913,7 +934,7 @@ $(document).ready(function() {
 		calcular();
 	});
 
-	$('#padrao, #emFormacao, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn, #personalizarUPV')
+	$('#padrao, #emFormacao, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn, #personalizarUPV, #tercoFerias')
 		.on('change input', calcular);
 
 	atualizarVisibilidade();
