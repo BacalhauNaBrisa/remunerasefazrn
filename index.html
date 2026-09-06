@@ -791,7 +791,7 @@ function calcular() {
 
 	var horasNoturnas = parseInt($('#horasNoturnas').val(), 10) || 0;
 	if (horasNoturnas < 0) horasNoturnas = 0;
-	if (horasNoturnas > 56) horasNoturnas = 56;
+	if (horasNoturnas > 72) horasNoturnas = 72;
 	var somaBaseNoturno = vencBasico + upvTotal + periculosidade + ats;
 	var valorHoraNormal = somaBaseNoturno / HORAS_MENSAIS;
 	var valorHoraNoturna = valorHoraNormal * ADICIONAL_NOTURNO_PCT * FATOR_HORA_NOTURNA_REDUZIDA;
@@ -970,7 +970,7 @@ $(document).ready(function() {
 		var v = this.value.replace(/[^0-9]/g, '');
 		if (v.length > 0) {
 			var n = parseInt(v, 10);
-			if (n > 56) n = 56;
+			if (n > 72) n = 72;
 			v = String(n);
 		}
 		this.value = v;
