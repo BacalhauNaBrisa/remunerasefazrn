@@ -635,7 +635,8 @@ footer a{color:var(--ink-600);}
 			<div class="bline sub"><span class="lbl">Previdência oficial do 13°</span><span class="num" id="lPrevOficial13">R$ 0,00</span></div>
 			<div class="bline sub" id="linhaPrevComplementar13"><span class="lbl">Previdência complementar do 13°</span><span class="num" id="lPrevComplementar13">R$ 0,00</span></div>
 			<div class="bline sub"><span class="lbl">Imposto de renda do 13°</span><span class="num" id="lIr13">R$ 0,00</span></div>
-			<div class="bline sub"><span class="lbl">Descontos consignados em folha</span><span class="num" id="lConsignados">R$ 0,00</span></div>
+			<div class="bline sub"><span class="lbl">Sindifern</span><span class="num" id="lSindifern">R$ 0,00</span></div>
+			<div class="bline sub"><span class="lbl">Asfarn</span><span class="num" id="lAsfarn">R$ 0,00</span></div>
 			<div class="bline total"><span class="lbl">Remuneração líquida</span><span class="num" id="lLiquida">R$ 0,00</span></div>
 		</div>
 
@@ -916,10 +917,9 @@ function calcular() {
 	// Descontos consignados em folha (Sindifern / Asfarn) — sobre vencimento básico + UPVs, limitado ao teto
 	var baseConsignado = truncar(vencBasico + upvTotal, 2);
 	if (baseConsignado > teto) baseConsignado = teto;
-	var descConsignados = 0;
-	if ($('#descSindifern').is(':checked')) descConsignados += truncar(baseConsignado * 0.005, 2);
-	if ($('#descAsfarn').is(':checked')) descConsignados += truncar(baseConsignado * 0.004, 2);
-	descConsignados = truncar(descConsignados, 2);
+	var descSindifern = $('#descSindifern').is(':checked') ? truncar(baseConsignado * 0.005, 2) : 0;
+	var descAsfarn = $('#descAsfarn').is(':checked') ? truncar(baseConsignado * 0.004, 2) : 0;
+	var descConsignados = truncar(descSindifern + descAsfarn, 2);
 
 	var liquida = truncar(bruta - redutor - prevOficial - prevComplementar - ir - irTercoFerias - redutor13 - prevOficial13 - prevComplementar13 - ir13 - descConsignados, 2);
 
@@ -927,27 +927,36 @@ function calcular() {
 	$('#outLiquida').text(formatarBRL(liquida));
 	$('#outBrutaMini').text('R$ ' + formatarBRL(bruta));
 
-	$('#lVenc').text('R$ ' + formatarBRL(vencBasico));
-	$('#lUpv').text('R$ ' + formatarBRL(upvTotal));
-	$('#lPeric').text('R$ ' + formatarBRL(periculosidade));
-	$('#lAjuda').text('R$ ' + formatarBRL(ajudaCusto));
-	$('#lAts').text('R$ ' + formatarBRL(ats));
-	$('#lNoturno').text('R$ ' + formatarBRL(adicionalNoturno));
-	$('#lResidual').text('R$ ' + formatarBRL(residualTotal));
-	$('#lTerco').text('R$ ' + formatarBRL(tercoFerias));
-	$('#lDecimo').text('R$ ' + formatarBRL(decimoFracionado));
+	// Preenche uma linha do painel e a oculta quando o valor é zero (ou quando forcarOculto é verdadeiro)
+	function setLinha(id, valor, negativo, forcarOculto) {
+		var texto = (negativo ? '- ' : '') + 'R$ ' + formatarBRL(valor);
+		var el = $('#' + id);
+		el.text(texto);
+		el.closest('.bline').toggleClass('hidden', valor === 0 || !!forcarOculto);
+	}
+
+	setLinha('lVenc', vencBasico, false);
+	setLinha('lUpv', upvTotal, false);
+	setLinha('lPeric', periculosidade, false);
+	setLinha('lAjuda', ajudaCusto, false);
+	setLinha('lAts', ats, false);
+	setLinha('lNoturno', adicionalNoturno, false);
+	setLinha('lResidual', residualTotal, false);
+	setLinha('lTerco', tercoFerias, false);
+	setLinha('lDecimo', decimoFracionado, false);
 	$('#lBruta').text('R$ ' + formatarBRL(bruta));
 
-	$('#lRedutor').text('- R$ ' + formatarBRL(redutor));
-	$('#lPrevOficial').text('- R$ ' + formatarBRL(prevOficial));
-	$('#lPrevComplementar').text('- R$ ' + formatarBRL(prevComplementar));
-	$('#lIr').text('- R$ ' + formatarBRL(ir));
-	$('#lIrTerco').text('- R$ ' + formatarBRL(irTercoFerias));
-	$('#lRedutor13').text('- R$ ' + formatarBRL(redutor13));
-	$('#lPrevOficial13').text('- R$ ' + formatarBRL(prevOficial13));
-	$('#lPrevComplementar13').text('- R$ ' + formatarBRL(prevComplementar13));
-	$('#lIr13').text('- R$ ' + formatarBRL(ir13));
-	$('#lConsignados').text('- R$ ' + formatarBRL(descConsignados));
+	setLinha('lRedutor', redutor, true);
+	setLinha('lPrevOficial', prevOficial, true);
+	setLinha('lPrevComplementar', prevComplementar, true, regime !== 'COMPLEMENTAR');
+	setLinha('lIr', ir, true);
+	setLinha('lIrTerco', irTercoFerias, true);
+	setLinha('lRedutor13', redutor13, true);
+	setLinha('lPrevOficial13', prevOficial13, true);
+	setLinha('lPrevComplementar13', prevComplementar13, true, regime !== 'COMPLEMENTAR');
+	setLinha('lIr13', ir13, true);
+	setLinha('lSindifern', descSindifern, true);
+	setLinha('lAsfarn', descAsfarn, true);
 	$('#lLiquida').text('R$ ' + formatarBRL(liquida));
 }
 
