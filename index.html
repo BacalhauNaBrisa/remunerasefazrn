@@ -890,11 +890,11 @@ function calcular() {
 			prevComplementar13 = difComp13 > 0 ? truncar(difComp13 * aliquotaComp, 2) : 0;
 		}
 	}
-	var baseIR13 = decimoAtivo ? truncar(decimoBaseCapped - prevOficial13, 2) : 0;
+	var baseIR13 = decimoAtivo ? truncar(decimoBaseCapped - prevOficial13 - prevComplementar13, 2) : 0;
 	if (baseIR13 < 0) baseIR13 = 0;
 	var ir13 = decimoAtivo ? calcularIR(baseIR13) : 0;
 
-	// ---------- Base do Imposto de Renda — soma das duas competências (cada uma limitada ao teto), deduzindo APENAS a previdência oficial ----------
+	// ---------- Base do Imposto de Renda — soma das duas competências (cada uma limitada ao teto), deduzindo a previdência oficial E a complementar ----------
 	var grossIRAtual = truncar(vencBasico + upvTotal + periculosidade + ats + adicionalNoturno, 2);
 	if (grossIRAtual > teto) grossIRAtual = teto;
 	var grossIRResidual = truncar(vencResidual + upvResidual + periculosidadeResidual + atsResidual, 2);
@@ -908,7 +908,7 @@ function calcular() {
 	if (isNaN(outrasDeducoes) || outrasDeducoes < 0) outrasDeducoes = 0;
 
 	var baseIR = truncar(grossIRAtual + grossIRResidual, 2);
-	baseIR = baseIR - prevOficial - truncar(dependentes * DEDUCAO_POR_DEPENDENTE, 2) - outrasDeducoes;
+	baseIR = baseIR - prevOficial - prevComplementar - truncar(dependentes * DEDUCAO_POR_DEPENDENTE, 2) - outrasDeducoes;
 	if (baseIR < 0) baseIR = 0;
 
 	var ir = calcularIR(baseIR);
