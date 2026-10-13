@@ -386,6 +386,32 @@ footer a{color:var(--ink-600);}
 					</label>
 				</div>
 				<div class="hint">Marcando esta opção, as Unidades de Parcela Variável (UPVs) não entram no cálculo da remuneração.</div>
+
+				<div class="hidden" id="campoUpvResidualToggle">
+					<div class="toggle-row">
+						<span>UPV Residual</span>
+						<label class="toggle-switch">
+							<input type="checkbox" id="upvResidualAtivo"/>
+							<span class="slider"></span>
+						</label>
+					</div>
+
+					<div class="grid2 hidden" id="campoUpvResidualCampos" style="margin-top:12px;">
+						<div class="field">
+							<label for="diasBaseCorrente">Base de dias do mês corrente</label>
+							<select id="diasBaseCorrente">
+								<option value="28">28 dias</option>
+								<option value="29">29 dias</option>
+								<option value="30" selected>30 dias</option>
+								<option value="31">31 dias</option>
+							</select>
+						</div>
+						<div class="field">
+							<label for="diasUpvResidual">Dias a que faz jus a UPV</label>
+							<input type="text" inputmode="numeric" id="diasUpvResidual" value="0"/>
+						</div>
+					</div>
+				</div>
 			</div>
 
 			<table class="ref">
@@ -616,6 +642,7 @@ footer a{color:var(--ink-600);}
 			<h3>Composição — proventos</h3>
 			<div class="bline add"><span class="lbl">Vencimento básico</span><span class="num" id="lVenc">R$ 0,00</span></div>
 			<div class="bline add"><span class="lbl">UPVs</span><span class="num" id="lUpv">R$ 0,00</span></div>
+			<div class="bline add"><span class="lbl">UPV Residual</span><span class="num" id="lUpvResidualFormacao">R$ 0,00</span></div>
 			<div class="bline add"><span class="lbl">Adicional de periculosidade</span><span class="num" id="lPeric">R$ 0,00</span></div>
 			<div class="bline add"><span class="lbl">Ajuda de Custo Operacional</span><span class="num" id="lAjuda">R$ 0,00</span></div>
 			<div class="bline add"><span class="lbl">ATS</span><span class="num" id="lAts">R$ 0,00</span></div>
@@ -741,6 +768,11 @@ function atualizarVisibilidade() {
 	$('#campoFormacao').toggleClass('hidden', padrao !== 'AFRE-1');
 	if (padrao !== 'AFRE-1') $('#emFormacao').prop('checked', false);
 
+	var emFormacaoAtivo = $('#emFormacao').is(':checked');
+	$('#campoUpvResidualToggle').toggleClass('hidden', !emFormacaoAtivo);
+	if (!emFormacaoAtivo) $('#upvResidualAtivo').prop('checked', false);
+	$('#campoUpvResidualCampos').toggleClass('hidden', !(emFormacaoAtivo && $('#upvResidualAtivo').is(':checked')));
+
 	var regime = $('#regime').val();
 	$('#campoAliquotaComplementar').toggleClass('hidden', regime !== 'COMPLEMENTAR');
 	$('#linhaPrevComplementar').toggleClass('hidden', regime !== 'COMPLEMENTAR');
@@ -777,7 +809,21 @@ function calcular() {
 		? (parseFloat($('#upvPersonalizada').data('valor')) || 0)
 		: VALOR_UPV;
 
-	var upvTotal = emFormacao ? 0 : truncar(padrao.upv * valorUpvAtual, 2);
+	var upvCheia = truncar(padrao.upv * valorUpvAtual, 2);
+
+	// UPV Residual (só em curso de formação): valor da UPV do padrão × dias a que faz jus / base de dias do mês corrente
+	var upvResidualFormacao = 0;
+	if (emFormacao && $('#upvResidualAtivo').is(':checked')) {
+		var diasBaseCorrente = parseInt($('#diasBaseCorrente').val(), 10) || 30;
+		var diasUpvResidual = parseInt($('#diasUpvResidual').val(), 10) || 0;
+		if (diasUpvResidual < 0) diasUpvResidual = 0;
+		if (diasUpvResidual > diasBaseCorrente) diasUpvResidual = diasBaseCorrente;
+		upvResidualFormacao = truncar(upvCheia * diasUpvResidual / diasBaseCorrente, 2);
+	}
+
+	// A UPV Residual entra, como UPV, em todas as bases de cálculo do mês vigente
+	var upvExibida = emFormacao ? 0 : upvCheia;
+	var upvTotal = truncar(upvExibida + upvResidualFormacao, 2);
 
 	var afre5UpvTotal = truncar(PADROES['AFRE-5'].upv * valorUpvAtual, 2);
 	var ajudaCustoPorDia = truncar(0.023 * (PADROES['AFRE-5'].venc + afre5UpvTotal), 2);
@@ -936,7 +982,8 @@ function calcular() {
 	}
 
 	setLinha('lVenc', vencBasico, false);
-	setLinha('lUpv', upvTotal, false);
+	setLinha('lUpv', upvExibida, false);
+	setLinha('lUpvResidualFormacao', upvResidualFormacao, false);
 	setLinha('lPeric', periculosidade, false);
 	setLinha('lAjuda', ajudaCusto, false);
 	setLinha('lAts', ats, false);
@@ -996,6 +1043,25 @@ $(document).ready(function() {
 		calcular();
 	});
 
+	$('#diasUpvResidual').on('input', function() {
+		var v = this.value.replace(/[^0-9]/g, '');
+		var maxDias = parseInt($('#diasBaseCorrente').val(), 10) || 30;
+		if (v.length > 0) {
+			var n = parseInt(v, 10);
+			if (n > maxDias) n = maxDias;
+			v = String(n);
+		}
+		this.value = v;
+		calcular();
+	});
+
+	$('#diasBaseCorrente').on('change', function() {
+		var maxDias = parseInt(this.value, 10);
+		var atual = parseInt($('#diasUpvResidual').val(), 10) || 0;
+		if (atual > maxDias) $('#diasUpvResidual').val(maxDias);
+		calcular();
+	});
+
 	$('#diasTrabalhadosAnterior').on('input', function() {
 		var v = this.value.replace(/[^0-9]/g, '');
 		var maxDias = parseInt($('#diasBaseAnterior').val(), 10) || 30;
@@ -1027,7 +1093,7 @@ $(document).ready(function() {
 		calcular();
 	});
 
-	$('#padrao, #emFormacao, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn, #personalizarUPV, #tercoFerias, #decimoTerceiro, #fracionar13')
+	$('#padrao, #emFormacao, #upvResidualAtivo, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn, #personalizarUPV, #tercoFerias, #decimoTerceiro, #fracionar13')
 		.on('change input', calcular);
 
 	atualizarVisibilidade();
