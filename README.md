@@ -65,6 +65,12 @@ Todo o cálculo roda **no navegador do usuário**, em JavaScript puro (nenhum da
 
 > **Nota sobre a base do IR:** a previdência complementar (privada, tipo PGBL) **é dedutível** da base de cálculo do IR, junto com a previdência oficial — essa regra foi confirmada de duas formas independentes: por comparação direta com um contracheque real (onde a rubrica previdenciária complementar reduz exatamente o IRPF apurado) e pelo simulador oficial de alíquota de IR da Receita Federal, que lista a contribuição à previdência privada como "outras deduções" na base de cálculo.
 
+### Acesso por senha
+
+Ao abrir a página, todos os cards ficam recolhidos (apenas os títulos). Acima do primeiro card há o campo **Senha** e o botão **Submeter**: a página consulta, via API REST do Firestore, o documento `acesso/senha` (campo `valor`) de um projeto Firebase próprio e compara com o texto digitado. Se coincidir, os cards se expandem e o simulador fica liberado; caso contrário, aparece apenas "Senha incorreta".
+
+> **Atenção:** como o código da página é público e a leitura do documento precisa ser pública nas regras do Firestore, esse mecanismo é apenas um bloqueio de conveniência, não uma proteção real.
+
 ### Regra de arredondamento
 
 Em todo o simulador, qualquer valor monetário calculado com mais de duas casas decimais é **truncado** (nunca arredondado) para duas casas — os algarismos excedentes são simplesmente descartados. Essa regra está centralizada numa única função utilitária (`truncar()`), aplicada logo após cada cálculo intermediário, para que o resultado final reproduza fielmente essa lógica em cada etapa da conta.

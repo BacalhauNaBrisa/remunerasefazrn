@@ -133,6 +133,7 @@ a{color:var(--navy-700);}
 
 /* Portão de senha: enquanto bloqueado, os cards ficam recolhidos (só o título) */
 body.bloqueado .card:not(.card-senha) > *:not(h2){display:none;}
+body.bloqueado .result-panel .breakdown,body.bloqueado .result-panel #blocoLiquido,body.bloqueado .result-panel #blocoBruto{display:none !important;}
 body.bloqueado .card:not(.card-senha) > h2{border-bottom:none;padding-bottom:0;margin-bottom:0;opacity:.7;}
 .senha-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
 .senha-row .field{flex:1;min-width:180px;margin-bottom:0;}
@@ -660,11 +661,11 @@ footer a{color:var(--ink-600);}
 	<div class="result-panel">
 		<div class="result-hero">
 			<div class="eyebrow">Remuneração líquida estimada</div>
-			<div class="liquido"><small>R$</small> <span id="outLiquida" class="num">0,00</span></div>
-			<div class="bruto-line"><span>Remuneração bruta</span><span class="num" id="outBrutaMini">R$ 0,00</span></div>
+			<div class="liquido" id="blocoLiquido"><small>R$</small> <span id="outLiquida" class="num">0,00</span></div>
+			<div class="bruto-line" id="blocoBruto"><span>Remuneração bruta</span><span class="num" id="outBrutaMini">R$ 0,00</span></div>
 		</div>
 
-		<div class="breakdown">
+		<div class="breakdown" id="blocoComposicao">
 			<h3>Composição — proventos</h3>
 			<div class="bline add"><span class="lbl">Vencimento básico</span><span class="num" id="lVenc">R$ 0,00</span></div>
 			<div class="bline add"><span class="lbl">UPVs</span><span class="num" id="lUpv">R$ 0,00</span></div>
@@ -1129,8 +1130,8 @@ $(document).ready(function() {
 	   Preencha com os dados do projeto Firebase do simulador.
 	   Documento esperado: coleção "acesso", documento "senha", campo "valor" (string). */
 	var FIREBASE_CFG = {
-		apiKey: 'COLE_AQUI_A_API_KEY',
-		projectId: 'COLE_AQUI_O_PROJECT_ID',
+		apiKey: 'AIzaSyCfZ-Z6dJrMxiHEAceu0_sGIP90dy83mEo',
+		projectId: 'remunerasefazrn',
 		colecao: 'acesso',
 		documento: 'senha',
 		campo: 'valor'
