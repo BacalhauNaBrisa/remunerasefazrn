@@ -131,6 +131,18 @@ a{color:var(--navy-700);}
 	letter-spacing:.03em;
 }
 
+/* Portão de senha: enquanto bloqueado, os cards ficam recolhidos (só o título) */
+body.bloqueado .card:not(.card-senha) > *:not(h2){display:none;}
+body.bloqueado .card:not(.card-senha) > h2{border-bottom:none;padding-bottom:0;margin-bottom:0;opacity:.7;}
+.senha-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+.senha-row .field{flex:1;min-width:180px;margin-bottom:0;}
+.btn-senha{
+	font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
+	background:var(--green-700);color:#fff;border:none;border-radius:8px;padding:11px 22px;
+}
+.btn-senha:disabled{opacity:.6;cursor:wait;}
+.senha-msg{margin-top:12px;font-size:13.5px;font-weight:600;color:#b3261e;}
+
 .field{margin-bottom:16px;}
 .field:last-child{margin-bottom:0;}
 .field label{
@@ -346,7 +358,7 @@ footer{
 footer a{color:var(--ink-600);}
 </style>
 </head>
-<body>
+<body class="bloqueado">
 
 <div class="topbar">
 	<div class="topbar-inner">
@@ -363,6 +375,20 @@ footer a{color:var(--ink-600);}
 
 	<!-- ===================== COLUNA ESQUERDA: FORM + TABELAS ===================== -->
 	<div>
+
+		<div class="card card-senha" id="cardSenha">
+			<h2>Acesso</h2>
+			<form id="formSenha" autocomplete="off">
+				<div class="senha-row">
+					<div class="field">
+						<label for="senha">Senha</label>
+						<input type="password" id="senha" autocomplete="off"/>
+					</div>
+					<button type="submit" class="btn-senha" id="btnSenha">Submeter</button>
+				</div>
+				<div class="senha-msg hidden" id="senhaMsg">Senha incorreta</div>
+			</form>
+		</div>
 
 		<div class="card">
 			<h2>Padrão remuneratório <span class="tag">obrigatório</span></h2>
@@ -1098,6 +1124,41 @@ $(document).ready(function() {
 
 	atualizarVisibilidade();
 	calcular();
+
+	/* ===== Portão de senha (leitura direta do Firestore via REST) =====
+	   Preencha com os dados do projeto Firebase do simulador.
+	   Documento esperado: coleção "acesso", documento "senha", campo "valor" (string). */
+	var FIREBASE_CFG = {
+		apiKey: 'COLE_AQUI_A_API_KEY',
+		projectId: 'COLE_AQUI_O_PROJECT_ID',
+		colecao: 'acesso',
+		documento: 'senha',
+		campo: 'valor'
+	};
+
+	$('#formSenha').on('submit', function (e) {
+		e.preventDefault();
+		var digitada = $('#senha').val();
+		var $msg = $('#senhaMsg').addClass('hidden').text('Senha incorreta');
+		var $btn = $('#btnSenha').prop('disabled', true);
+		var url = 'https://firestore.googleapis.com/v1/projects/' + encodeURIComponent(FIREBASE_CFG.projectId) +
+			'/databases/(default)/documents/' + FIREBASE_CFG.colecao + '/' + FIREBASE_CFG.documento +
+			'?key=' + encodeURIComponent(FIREBASE_CFG.apiKey);
+		fetch(url)
+			.then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+			.then(function (doc) {
+				var f = doc && doc.fields && doc.fields[FIREBASE_CFG.campo];
+				var correta = f && (f.stringValue !== undefined ? f.stringValue : (f.integerValue !== undefined ? f.integerValue : null));
+				if (correta !== null && correta !== undefined && digitada !== '' && String(digitada) === String(correta)) {
+					$('body').removeClass('bloqueado');
+					$('#cardSenha').addClass('hidden');
+				} else {
+					$msg.removeClass('hidden');
+				}
+			})
+			.catch(function () { $msg.removeClass('hidden'); })
+			.then(function () { $btn.prop('disabled', false); });
+	});
 });
 </script>
 </body>
