@@ -42,7 +42,7 @@ Todo o cálculo roda **no navegador do usuário**, em JavaScript puro (nenhum da
 | **Vencimento básico** | Valor fixo por padrão (AFRE-1 a AFRE-5), conforme tabela na própria página (que também exibe o valor monetário total das UPVs por padrão). |
 | **UPVs** (Unidade de Parcela Variável) | `quantidade de UPVs do padrão × valor unitário da UPV (R$ 294,64 por padrão)`. Zerada se o padrão for AFRE-1 e o usuário ativar o toggle "em curso de formação" (Art. 46 da LOAT-RN). O valor unitário da UPV pode ser opcionalmente personalizado (toggle "Personalizar UPV", até R$ 999,99), sobrescrevendo o valor oficial em todos os cálculos que dependem dele. |
 | **Adicional de periculosidade** | `30% do vencimento básico`, sempre devido em todos os padrões, independente das UPVs. |
-| **Ajuda de Custo Operacional de Fiscalização** | Valor fixo por dia = `2,30% × (vencimento básico do AFRE-5 + UPVs do AFRE-5)`, multiplicado pelo número de dias informado (0 a 7). É indenizatória: não sofre desconto e não entra nas bases previdenciária/IR. |
+| **Ajuda de Custo Operacional de Fiscalização** | Valor fixo por dia = `2,30% × (vencimento básico do AFRE-5 + UPVs do AFRE-5)`, multiplicado pelo número de dias informado (0 a 7). Um dropdown permite escolher a base: **"Base sendo paga"** (padrão), que usa os valores anteriores do AFRE-5 (R$ 33.665,36 + R$ 14.259,50 → R$ 1.102,27/dia), ou **"Base ainda não implementada"**, que usa os valores atuais (R$ 34.137,86 + R$ 14.732,00 → R$ 1.124,00/dia). É indenizatória: não sofre desconto e não entra nas bases previdenciária/IR. |
 | **ATS** (Adicional por Tempo de Serviço) | Percentual (0% a 35%, conforme faixa de tempo escolhida) `× vencimento básico`. |
 | **Adicional noturno** | Calculado sobre `vencimento básico + UPVs + periculosidade + ATS`, dividido por 150 (horas mensais) para obter o valor-hora normal; esse valor-hora é multiplicado por 25% (acréscimo noturno) e pelo fator `60/52,5` (hora noturna reduzida de 52min30s), resultando no valor-hora noturno, que é então multiplicado pela quantidade de horas noturnas informada (0 a 56), conforme art. 82 da Lei Complementar nº 122/1994 (RJU-RN). É integralmente remuneratório. |
 | **Terço de férias** (opcional) | `1/3 × (vencimento básico + UPVs + ATS + periculosidade)` do mês vigente. Só sofre desconto de Imposto de Renda, apurado isoladamente sobre o próprio valor do terço — sem previdência, redutor ou consignados. |
@@ -70,6 +70,20 @@ Todo o cálculo roda **no navegador do usuário**, em JavaScript puro (nenhum da
 Ao abrir a página, todos os cards ficam recolhidos (apenas os títulos). Acima do primeiro card há o campo **Senha** e o botão **Submeter**: a página consulta, via API REST do Firestore, o documento `acesso/senha` (campo `valor`) de um projeto Firebase próprio e compara com o texto digitado. Se coincidir, os cards se expandem e o simulador fica liberado; caso contrário, aparece apenas "Senha incorreta".
 
 > **Atenção:** como o código da página é público e a leitura do documento precisa ser pública nas regras do Firestore, esse mecanismo é apenas um bloqueio de conveniência, não uma proteção real.
+
+### Histórico de valores
+
+O código guarda, em `PADROES_ANTERIORES`, os vencimentos básicos e os valores totais das UPVs anteriores aos atuais (valor unitário anterior da UPV: R$ 285,19):
+
+| Padrão | Vencimento básico | UPVs |
+|---|---|---|
+| AFRE-1 | R$ 23.055,73 | R$ 9.762,05 |
+| AFRE-2 | R$ 24.432,13 | R$ 11.028,39 |
+| AFRE-3 | R$ 26.033,73 | R$ 12.033,38 |
+| AFRE-4 | R$ 30.775,60 | R$ 13.036,03 |
+| AFRE-5 | R$ 33.665,36 | R$ 14.259,50 |
+
+Atualmente só o AFRE-5 é usado, na "Base sendo paga" da Ajuda de Custo.
 
 ### Regra de arredondamento
 

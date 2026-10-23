@@ -470,6 +470,14 @@ footer a{color:var(--ink-600);}
 		<div class="card">
 			<h2>Verbas adicionais</h2>
 			<div class="field">
+				<label for="baseAjuda">Ajuda de Custo Operacional de Fiscalização — base de cálculo</label>
+				<select id="baseAjuda">
+					<option value="PAGA" selected>Base sendo paga</option>
+					<option value="NOVA">Base ainda não implementada</option>
+				</select>
+				<div class="hint">"Base sendo paga": 2,30% sobre o vencimento básico + UPVs anteriores do AFRE-5 (R$ 33.665,36 + R$ 14.259,50). "Base ainda não implementada": 2,30% sobre o vencimento básico + UPVs atuais do AFRE-5.</div>
+			</div>
+			<div class="field">
 				<label for="diasAjuda">Ajuda de Custo Operacional de Fiscalização — dias no mês</label>
 				<select id="diasAjuda">
 					<option value="0">0 dia</option>
@@ -716,6 +724,16 @@ const PADROES = {
 	'AFRE-4': { venc: 31207.56, upv: 45.71 },
 	'AFRE-5': { venc: 34137.86, upv: 50.00 }
 };
+
+// Histórico: valores anteriores aos atuais (vencimento básico e valor total das UPVs, em R$).
+// O valor unitário anterior da UPV era R$ 285,19 (ex.: AFRE-5: 50,00 × 285,19 = 14.259,50).
+const PADROES_ANTERIORES = {
+	'AFRE-1': { venc: 23055.73, upvTotal: 9762.05 },
+	'AFRE-2': { venc: 24432.13, upvTotal: 11028.39 },
+	'AFRE-3': { venc: 26033.73, upvTotal: 12033.38 },
+	'AFRE-4': { venc: 30775.60, upvTotal: 13036.03 },
+	'AFRE-5': { venc: 33665.36, upvTotal: 14259.50 }
+};
 const VALOR_UPV = 294.64;
 const PERICULOSIDADE_PCT = 0.30;
 const DEDUCAO_POR_DEPENDENTE = 189.59;
@@ -853,7 +871,12 @@ function calcular() {
 	var upvTotal = truncar(upvExibida + upvResidualFormacao, 2);
 
 	var afre5UpvTotal = truncar(PADROES['AFRE-5'].upv * valorUpvAtual, 2);
-	var ajudaCustoPorDia = truncar(0.023 * (PADROES['AFRE-5'].venc + afre5UpvTotal), 2);
+	var ajudaCustoPorDia;
+	if ($('#baseAjuda').val() === 'NOVA') {
+		ajudaCustoPorDia = truncar(0.023 * (PADROES['AFRE-5'].venc + afre5UpvTotal), 2);
+	} else {
+		ajudaCustoPorDia = truncar(0.023 * (PADROES_ANTERIORES['AFRE-5'].venc + PADROES_ANTERIORES['AFRE-5'].upvTotal), 2);
+	}
 
 	var periculosidade = truncar(vencBasico * PERICULOSIDADE_PCT, 2);
 
@@ -1120,7 +1143,7 @@ $(document).ready(function() {
 		calcular();
 	});
 
-	$('#padrao, #emFormacao, #upvResidualAtivo, #diasAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn, #personalizarUPV, #tercoFerias, #decimoTerceiro, #fracionar13')
+	$('#padrao, #emFormacao, #upvResidualAtivo, #diasAjuda, #baseAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn, #personalizarUPV, #tercoFerias, #decimoTerceiro, #fracionar13')
 		.on('change input', calcular);
 
 	atualizarVisibilidade();
