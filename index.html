@@ -515,6 +515,10 @@ footer a{color:var(--ink-600);}
 				<label for="horasNoturnas">Adicional noturno (horas trabalhadas)</label>
 				<input type="text" inputmode="numeric" id="horasNoturnas" value="0"/>
 				<div class="hint">O serviço noturno, prestado em horário compreendido entre 22 (vinte e duas) horas de um dia e 05 (cinco) horas do dia seguinte, tem o valor-hora acrescido de 25% (vinte e cinco por cento), computando-se cada hora como de 52 (cinquenta e dois) minutos e 30 (trinta) segundos, em conformidade com o art. 82 da Lei Complementar nº 122, de 30 de junho de 1994 (Regime Jurídico Único dos Servidores do RN).</div>
+				<div class="toggle-row" style="margin-top:12px;">
+					<span>Adicional noturno de competência anterior (não entra na base da previdência complementar)</span>
+					<label class="toggle-switch"><input type="checkbox" id="noturnoAnterior"/><span class="slider"></span></label>
+				</div>
 			</div>
 		</div>
 
@@ -946,7 +950,8 @@ function calcular() {
 	if (basePrevResidual > teto) basePrevResidual = teto;
 
 	// ---------- Base para o desconto previdenciário complementar — por competência, cada uma limitada ao teto ----------
-	var baseComplementarAtual = truncar(vencBasico + upvTotal + ats + adicionalNoturno, 2);
+	var noturnoNaBaseComplementar = $('#noturnoAnterior').is(':checked') ? 0 : adicionalNoturno;
+	var baseComplementarAtual = truncar(vencBasico + upvTotal + ats + noturnoNaBaseComplementar, 2);
 	if (baseComplementarAtual > teto) baseComplementarAtual = teto;
 	var baseComplementarResidual = basePrevResidual; // parcela residual não tem adicional noturno próprio
 
@@ -1143,7 +1148,7 @@ $(document).ready(function() {
 		calcular();
 	});
 
-	$('#padrao, #emFormacao, #upvResidualAtivo, #diasAjuda, #baseAjuda, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn, #personalizarUPV, #tercoFerias, #decimoTerceiro, #fracionar13')
+	$('#padrao, #emFormacao, #upvResidualAtivo, #diasAjuda, #baseAjuda, #noturnoAnterior, #ats, #teto, #regime, #aliquotaComplementar, #outrasDeducoes, #descSindifern, #descAsfarn, #personalizarUPV, #tercoFerias, #decimoTerceiro, #fracionar13')
 		.on('change input', calcular);
 
 	atualizarVisibilidade();
